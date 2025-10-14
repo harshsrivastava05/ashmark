@@ -1,0 +1,242 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { formatPrice } from "@/lib/utils"
+import { CartItem } from "@/components/cart/cart-item"
+import { EmptyCart } from "@/components/cart/empty-cart"
+import { Skeleton } from "@/components/ui/skeleton"
+
+interface CartItemType {
+  id: string
+  quantity: number
+  size?: string
+  color?: string
+  product: {
+    id: string
+    name: string
+    price: number
+    images: string[]
+    slug: string
+  }
+}
+
+export default function CartPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [cartItems, setCartItems] = useState<CartItemType[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!session) {
+      router.push('/login')
+      return
+    }
+
+    fetchCart()
+  }, [session, router])
+
+  const fetchCart = async () => {
+    try {
+      const response = await fetch('/api/cart')
+      if (response.ok) {
+        const data = await response.json()
+        setCartItems(data.cartItems)
+      }
+    } catch (error) {
+      console.error('Error fetching cart:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateQuantity = async (itemId: string, newQuantity: number) => {
+    if (newQuantity < 1) {
+      removeItem(itemId)
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQuantity }),
+      })
+
+      if (response.ok) {
+        setCartItems(items =>
+          items.map(item =>
+            item.id === itemId ? { ...item, quantity: newQuantity } : item
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error)
+    }
+  }
+
+  const removeItem = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setCartItems(items => items.filter(item => item.id !== itemId))
+      }
+    } catch (error) {
+      console.error('Error removing item:', error)
+    }
+  }
+
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    0
+  )
+  const shipping = subtotal > 1000 ? 0 : 100
+  const tax = subtotal * 0.1
+  const total = subtotal + shipping + tax
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen">
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            <CartSkeleton />
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen">
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            <EmptyCart />
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2 space-y-4">
+              {cartItems.map((item) => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  onUpdateQuantity={updateQuantity}
+                  onRemove={removeItem}
+                />
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>
+                      {shipping === 0 ? (
+                        <span className="text-green-600">Free</span>
+                      ) : (
+                        formatPrice(shipping)
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tax</span>
+                    <span>{formatPrice(tax)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-semibold text-lg">
+                    <span>Total</span>
+                    <span>{formatPrice(total)}</span>
+                  </div>
+                  <Button
+                    className="w-full bg-crimson-600 hover:bg-crimson-700"
+                    onClick={() => router.push('/checkout')}
+                  >
+                    Proceed to Checkout
+                  </Button>
+                  {subtotal < 1000 && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      Add {formatPrice(1000 - subtotal)} more for free shipping
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+function CartSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-48" />
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex gap-4 p-4 border rounded-lg">
+              <Skeleton className="w-20 h-20" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex justify-between">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              ))}
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
