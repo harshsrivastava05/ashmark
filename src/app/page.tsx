@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowRight, ShoppingBag, Star } from "lucide-react"
 import { prisma } from "@/lib/db"
 import { ProductCard } from "@/components/product/product-card"
@@ -9,18 +10,24 @@ import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 
 export default async function HomePage() {
-  const [featuredProducts, trendingProducts] = await Promise.all([
-    prisma.product.findMany({
-      where: { featured: true },
-      take: 4,
-      include: { category: true },
-    }),
-    prisma.product.findMany({
-      where: { trending: true },
-      take: 4,
-      include: { category: true },
-    }),
-  ])
+  let featuredProducts: any[] = []
+  let trendingProducts: any[] = []
+  try {
+    ;[featuredProducts, trendingProducts] = await Promise.all([
+      prisma.product.findMany({
+        where: { featured: true },
+        take: 4,
+        include: { category: true },
+      }),
+      prisma.product.findMany({
+        where: { trending: true },
+        take: 4,
+        include: { category: true },
+      }),
+    ])
+  } catch (e) {
+    // If the database is unreachable, render the page without products
+  }
 
   return (
     <>
@@ -125,15 +132,12 @@ export default async function HomePage() {
                   </a>
                 </Button>
               </div>
-              <div className="h-96 rounded-lg overflow-hidden">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.8751!2d72.8777!3d19.0760!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDA0JzMzLjYiTiA3Msm1MidMpJ?"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
+              <div className="h-96 rounded-lg overflow-hidden relative">
+                <Image
+                  src="/map.png"
+                  alt="ASHMARK Store Location"
+                  fill
+                  className="object-cover"
                 />
               </div>
             </div>

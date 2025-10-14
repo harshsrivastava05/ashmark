@@ -5,24 +5,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 
 interface ProductGridProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string
     category?: string
     page?: string
     sort?: string
     minPrice?: string
     maxPrice?: string
-  }
+  }>
 }
 
 export async function ProductGrid({ searchParams }: ProductGridProps) {
-  const page = parseInt(searchParams.page || '1')
+  const sp = await searchParams
+  const page = parseInt(sp.page || '1')
   const limit = 12
-  const search = searchParams.search
-  const category = searchParams.category
-  const minPrice = searchParams.minPrice
-  const maxPrice = searchParams.maxPrice
-  const sort = searchParams.sort || 'createdAt'
+  const search = sp.search
+  const category = sp.category
+  const minPrice = sp.minPrice
+  const maxPrice = sp.maxPrice
+  const sort = sp.sort || 'createdAt'
   const order = 'desc'
 
   const skip = (page - 1) * limit
@@ -105,7 +106,7 @@ export async function ProductGrid({ searchParams }: ProductGridProps) {
         <div className="flex justify-center items-center space-x-2 mt-8">
           {page > 1 && (
             <Button variant="outline" asChild>
-              <Link href={`?${new URLSearchParams({ ...searchParams, page: (page - 1).toString() })}`}>
+              <Link href={`?${(() => { const params = new URLSearchParams(); Object.entries(sp).forEach(([k, v]) => { if (typeof v === 'string') params.set(k, v) }); params.set('page', (page - 1).toString()); return params.toString() })()}`}>
                 Previous
               </Link>
             </Button>
@@ -117,7 +118,7 @@ export async function ProductGrid({ searchParams }: ProductGridProps) {
           
           {page < totalPages && (
             <Button variant="outline" asChild>
-              <Link href={`?${new URLSearchParams({ ...searchParams, page: (page + 1).toString() })}`}>
+              <Link href={`?${(() => { const params = new URLSearchParams(); Object.entries(sp).forEach(([k, v]) => { if (typeof v === 'string') params.set(k, v) }); params.set('page', (page + 1).toString()); return params.toString() })()}`}>
                 Next
               </Link>
             </Button>

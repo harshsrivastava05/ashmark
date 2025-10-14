@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toast } from "@/components/ui/toast"
+import { Toaster } from "@/components/ui/toaster"
 import { SessionProvider } from "next-auth/react"
 import { auth } from "@/lib/auth"
 
@@ -31,7 +31,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {children}
-            <Toast />
+            <Toaster />
           </ThemeProvider>
         </SessionProvider>
       </body>
