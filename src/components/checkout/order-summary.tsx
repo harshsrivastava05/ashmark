@@ -49,7 +49,7 @@ export function OrderSummary() {
     0
   )
   const shipping = subtotal > 1000 ? 0 : 100
-  const tax = subtotal * 0.1
+  const tax = 0
   const discount = subtotal > 2000 ? subtotal * 0.05 : 0
   const total = subtotal + shipping + tax - discount
 
@@ -151,13 +151,7 @@ export function OrderSummary() {
             </span>
           </div>
           
-          <div className="flex justify-between text-sm">
-            <div className="flex items-center gap-1">
-              <Receipt className="h-4 w-4" />
-              <span>Tax (GST 10%)</span>
-            </div>
-            <span>{formatPrice(tax)}</span>
-          </div>
+          {/* No tax applied */}
 
           {discount > 0 && (
             <div className="flex justify-between text-sm text-green-600">

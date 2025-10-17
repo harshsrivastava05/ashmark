@@ -5,25 +5,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { formatPrice } from "@/lib/utils"
 import { 
   ShoppingBag, 
-  TrendingUp, 
   Users, 
   Package, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  Calendar,
   Clock
 } from "lucide-react"
 
 interface OrderStats {
   totalOrders: number
-  totalRevenue: number
-  averageOrderValue: number
   pendingOrders: number
   completedOrders: number
   cancelledOrders: number
-  todayOrders: number
-  todayRevenue: number
-  growthRate: number
 }
 
 export function AdminOrdersStats() {
@@ -72,35 +63,13 @@ export function AdminOrdersStats() {
       value: stats?.totalOrders?.toLocaleString() || "0",
       description: "All time orders",
       icon: ShoppingBag,
-      change: "+12.5%",
-      changeType: "positive" as const,
       color: "text-blue-600",
-    },
-    {
-      title: "Total Revenue",
-      value: formatPrice(stats?.totalRevenue || 0),
-      description: "Total earnings",
-      icon: TrendingUp,
-      change: `+${stats?.growthRate || 0}%`,
-      changeType: "positive" as const,
-      color: "text-green-600",
-    },
-    {
-      title: "Average Order Value",
-      value: formatPrice(stats?.averageOrderValue || 0),
-      description: "Per order average",
-      icon: Package,
-      change: "+8.3%",
-      changeType: "positive" as const,
-      color: "text-purple-600",
     },
     {
       title: "Pending Orders",
       value: stats?.pendingOrders?.toLocaleString() || "0",
       description: "Awaiting processing",
       icon: Clock,
-      change: "-2.1%",
-      changeType: "negative" as const,
       color: "text-yellow-600",
     },
     {
@@ -108,8 +77,6 @@ export function AdminOrdersStats() {
       value: stats?.completedOrders?.toLocaleString() || "0",
       description: "Successfully delivered",
       icon: Package,
-      change: "+15.7%",
-      changeType: "positive" as const,
       color: "text-green-600",
     },
     {
@@ -117,27 +84,7 @@ export function AdminOrdersStats() {
       value: stats?.cancelledOrders?.toLocaleString() || "0",
       description: "Cancelled by customers",
       icon: Users,
-      change: "+3.2%",
-      changeType: "negative" as const,
       color: "text-red-600",
-    },
-    {
-      title: "Today's Orders",
-      value: stats?.todayOrders?.toLocaleString() || "0",
-      description: "Orders placed today",
-      icon: Calendar,
-      change: "+25%",
-      changeType: "positive" as const,
-      color: "text-crimson-600",
-    },
-    {
-      title: "Today's Revenue",
-      value: formatPrice(stats?.todayRevenue || 0),
-      description: "Revenue generated today",
-      icon: TrendingUp,
-      change: "+18%",
-      changeType: "positive" as const,
-      color: "text-green-600",
     },
   ]
 
@@ -150,16 +97,7 @@ export function AdminOrdersStats() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Icon className={`h-8 w-8 ${stat.color}`} />
-                <div className="flex items-center gap-1 text-xs">
-                  {stat.changeType === "positive" ? (
-                    <ArrowUpRight className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <ArrowDownRight className="h-3 w-3 text-red-500" />
-                  )}
-                  <span className={stat.changeType === "positive" ? "text-green-500" : "text-red-500"}>
-                    {stat.change}
-                  </span>
-                </div>
+                <div />
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground mb-1">

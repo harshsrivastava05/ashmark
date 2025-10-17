@@ -76,8 +76,36 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where }),
     ])
 
+    const serialized = orders.map((o) => ({
+      id: o.id,
+      status: o.status,
+      paymentStatus: o.paymentStatus,
+      total: Number(o.total),
+      createdAt: o.createdAt.toISOString(),
+      user: {
+        id: o.user?.id || '',
+        name: o.user?.name || null,
+        email: o.user?.email || '',
+        image: o.user?.image || null,
+      },
+      items: o.items.map((it) => ({
+        quantity: it.quantity,
+        product: {
+          name: it.product.name,
+          images: it.product.images,
+        },
+      })),
+      shippingAddress: o.shippingAddress
+        ? {
+            city: o.shippingAddress.city,
+            state: o.shippingAddress.state,
+            pincode: o.shippingAddress.pincode,
+          }
+        : null,
+    }))
+
     return NextResponse.json({
-      orders,
+      orders: serialized,
       pagination: {
         page,
         limit,

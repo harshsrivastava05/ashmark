@@ -1,9 +1,26 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShoppingBag, TrendingUp, AlertCircle, Clock, Download } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export function AdminOrdersHeader() {
+  const [stats, setStats] = useState<{ pending: number; processing: number; issues: number; todaysRevenue: number } | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/admin/orders/stats')
+        if (res.ok) {
+          setStats(await res.json())
+        }
+      } catch {}
+    }
+    load()
+  }, [])
   return (
     <div className="mb-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -37,7 +54,7 @@ export function AdminOrdersHeader() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending Orders</p>
-                <p className="text-2xl font-bold text-yellow-600">23</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats?.pending ?? 0}</p>
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
@@ -49,7 +66,7 @@ export function AdminOrdersHeader() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Processing</p>
-                <p className="text-2xl font-bold text-blue-600">45</p>
+                <p className="text-2xl font-bold text-blue-600">{stats?.processing ?? 0}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-blue-600" />
             </div>
@@ -61,7 +78,7 @@ export function AdminOrdersHeader() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Issues</p>
-                <p className="text-2xl font-bold text-red-600">7</p>
+                <p className="text-2xl font-bold text-red-600">{stats?.issues ?? 0}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
@@ -73,7 +90,7 @@ export function AdminOrdersHeader() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Today&apos;s Revenue</p>
-                <p className="text-2xl font-bold text-green-600">₹1,24,567</p>
+                <p className="text-2xl font-bold text-green-600">{formatPrice(stats?.todaysRevenue || 0)}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-600" />
             </div>

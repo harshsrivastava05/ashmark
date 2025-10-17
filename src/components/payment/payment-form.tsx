@@ -70,16 +70,20 @@ export function PaymentForm({ order, isRetry = false }: PaymentFormProps) {
     setProcessing(true)
 
     try {
+      // Prevent duplicate clicks
+      if (processing) return
       let razorpayOrderId = order.razorpayOrderId
 
       // Create new Razorpay order if needed
       if (!razorpayOrderId || isRetry) {
+        // Idempotent create: use order.id as an idempotency key on server side
         const orderResponse = await fetch('/api/payments/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             orderId: order.id,
             amount: order.total,
+            idempotencyKey: order.id,
           }),
         })
 
@@ -155,6 +159,7 @@ export function PaymentForm({ order, isRetry = false }: PaymentFormProps) {
         },
       }
 
+      // Reuse the same instance per click
       const razorpayInstance = new Razorpay(options as any)
       razorpayInstance.open()
     } catch (error) {

@@ -62,7 +62,7 @@ interface AdminOrder {
     city: string
     state: string
     pincode: string
-  }
+  } | null
 }
 
 interface AdminOrdersTableProps {
@@ -368,7 +368,11 @@ export function AdminOrdersTable({ searchParams }: AdminOrdersTableProps) {
                           #{order.id.slice(-8).toUpperCase()}
                         </Link>
                         <div className="text-sm text-muted-foreground">
-                          {order.shippingAddress.city}, {order.shippingAddress.state}
+                          {order.shippingAddress ? (
+                            `${order.shippingAddress.city}, ${order.shippingAddress.state}`
+                          ) : (
+                            'No address'
+                          )}
                         </div>
                       </div>
                     </TableCell>

@@ -4,48 +4,50 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
-    --primary: 0 72% 51%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 40% 98%;
+    /* --- Warm Beige Base Theme --- */
+    --background: 35 40% 96%;           /* soft beige background */
+    --foreground: 25 20% 20%;          /* dark brown text */
+    --card: 35 40% 98%;
+    --card-foreground: 25 20% 20%;
+    --popover: 35 40% 98%;
+    --popover-foreground: 25 20% 20%;
+    --primary: 15 60% 40%;             /* warm terracotta primary */
+    --primary-foreground: 35 40% 96%;
+    --secondary: 35 25% 90%;           /* lighter beige secondary */
+    --secondary-foreground: 25 20% 20%;
+    --muted: 35 20% 88%;
+    --muted-foreground: 25 15% 35%;
+    --accent: 15 60% 40%;
+    --accent-foreground: 35 40% 96%;
     --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 0 72% 51%;
+    --destructive-foreground: 35 40% 96%;
+    --border: 35 25% 85%;
+    --input: 35 25% 85%;
+    --ring: 15 60% 40%;
     --radius: 0.5rem;
   }
 
+  /* optional “light” variant if needed */
   .light {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 0 72% 51%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 0 72% 51%;
+    --background: 35 40% 96%;
+    --foreground: 25 20% 20%;
+    --card: 35 40% 98%;
+    --card-foreground: 25 20% 20%;
+    --popover: 35 40% 98%;
+    --popover-foreground: 25 20% 20%;
+    --primary: 15 60% 40%;
+    --primary-foreground: 35 40% 96%;
+    --secondary: 35 25% 90%;
+    --secondary-foreground: 25 20% 20%;
+    --muted: 35 20% 88%;
+    --muted-foreground: 25 15% 35%;
+    --accent: 15 60% 40%;
+    --accent-foreground: 35 40% 96%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 35 40% 96%;
+    --border: 35 25% 85%;
+    --input: 35 25% 85%;
+    --ring: 15 60% 40%;
   }
 }
 
@@ -65,6 +67,6 @@
 }
 
 .grid-pattern {
-  background-image: radial-gradient(circle, rgba(239, 68, 68, 0.1) 1px, transparent 1px);
+  background-image: radial-gradient(circle, hsla(35, 40%, 30%, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
