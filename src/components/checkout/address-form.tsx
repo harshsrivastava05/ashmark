@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -40,7 +40,6 @@ interface AddressFormProps {
 }
 
 export function AddressForm({
-  addresses,
   selectedAddress,
   onAddressSelect,
   onAddressUpdate
@@ -57,6 +56,120 @@ export function AddressForm({
     country: "India",
     isDefault: false,
   })
+
+  const [userAddresses, setUserAddresses] = useState<Address[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch addresses on component mount
+  useEffect(() => {
+    fetchAddresses()
+  }, [])
+
+  const fetchAddresses = async () => {
+    try {
+      const response = await fetch('/api/addresses')
+      if (response.ok) {
+        const data = await response.json()
+        setUserAddresses(data.addresses)
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveAddress = async (addressData: any) => {
+    try {
+      const url = editingAddress 
+        ? `/api/addresses/${editingAddress.id}`
+        : '/api/addresses'
+      
+      const method = editingAddress ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(addressData),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        toast({
+          title: "Success",
+          description: result.message,
+        })
+        fetchAddresses() // Refresh addresses
+        setIsAddingNew(false)
+        setEditingAddress(null)
+      } else {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save address')
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) return
+
+    try {
+      const response = await fetch(`/api/addresses/${addressId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        toast({
+          title: "Success",
+          description: result.message,
+        })
+        fetchAddresses() // Refresh addresses
+      } else {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete address')
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleSetDefault = async (addressId: string) => {
+    try {
+      const response = await fetch(`/api/addresses/${addressId}/set-default`, {
+        method: 'PUT',
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        toast({
+          title: "Success",
+          description: result.message,
+        })
+        fetchAddresses() // Refresh addresses
+      } else {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update default address')
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      })
+    }
+  }
 
   const resetForm = () => {
     setFormData({
@@ -101,7 +214,7 @@ export function AddressForm({
       } else {
         throw new Error('Failed to save address')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to save address",
@@ -142,7 +255,7 @@ export function AddressForm({
       } else {
         throw new Error('Failed to delete address')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete address",
@@ -161,7 +274,7 @@ export function AddressForm({
         <CardDescription>Choose where you want your order to be delivered</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {addresses.length === 0 ? (
+        {userAddresses.length === 0 ? (
           <div className="text-center py-8">
             <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No addresses found</h3>
@@ -173,12 +286,12 @@ export function AddressForm({
           <RadioGroup
             value={selectedAddress?.id || ""}
             onValueChange={(value: any) => {
-              const address = addresses.find(addr => addr.id === value)
+              const address = userAddresses.find(addr => addr.id === value)
               if (address) onAddressSelect(address)
             }}
           >
             <div className="space-y-3">
-              {addresses.map((address) => (
+              {userAddresses.map((address) => (
                 <div key={address.id} className="flex items-start space-x-3 p-3 bg-muted/30 hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
                   <div className="flex-1">

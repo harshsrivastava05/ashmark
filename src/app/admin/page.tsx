@@ -1,11 +1,10 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Navbar } from "@/components/layout/navbar"
 import { DashboardStats } from "@/components/admin/dashboard-stats"
 import { RecentOrders } from "@/components/admin/recent-orders"
-import { TopProducts } from "@/components/admin/top-products"
+import { AddProductSection } from "@/components/admin/add-product-section"
 
 export default async function AdminDashboard() {
   const session = await auth()
@@ -44,7 +43,7 @@ export default async function AdminDashboard() {
 
           <div className="grid lg:grid-cols-2 gap-6 mt-6">
             <RecentOrders />
-            <TopProducts />
+            <AddProductSection />
           </div>
         </div>
       </main>

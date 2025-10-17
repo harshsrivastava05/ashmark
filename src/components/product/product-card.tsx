@@ -1,3 +1,5 @@
+'use client'
+
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -5,6 +7,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/utils"
 import { ShoppingCart, Heart } from "lucide-react"
+import { useState, useTransition } from "react"
+import { toast } from "@/components/ui/use-toast"
 
 interface ProductCardProps {
   product: {
@@ -26,6 +30,29 @@ export function ProductCard({ product }: ProductCardProps) {
   const discountPercentage = product.comparePrice
     ? Math.round(((Number(product.comparePrice) - Number(product.price)) / Number(product.comparePrice)) * 100)
     : 0
+
+  const [isPending] = useTransition()
+  const [adding, setAdding] = useState(false)
+
+  const addToCart = async () => {
+    setAdding(true)
+    try {
+      const res = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id, quantity: 1 })
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to add to cart')
+      }
+      toast({ title: 'Added to Cart', description: `${product.name} added to your cart.` })
+    } catch (e) {
+      toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed to add to cart', variant: 'destructive' })
+    } finally {
+      setAdding(false)
+    }
+  }
 
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-shadow">
@@ -57,7 +84,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <Heart className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <CardContent className="p-4">
         <div className="text-xs text-muted-foreground mb-1">
           {product.category.name}
@@ -76,11 +103,11 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
       </CardContent>
-      
+
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full bg-crimson-600 hover:bg-crimson-700">
+        <Button className="w-full bg-crimson-600 hover:bg-crimson-700" onClick={addToCart} disabled={adding || isPending}>
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
+          {adding ? 'Adding...' : 'Add to Cart'}
         </Button>
       </CardFooter>
     </Card>

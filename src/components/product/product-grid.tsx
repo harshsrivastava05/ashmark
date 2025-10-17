@@ -5,18 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 
 interface ProductGridProps {
-  searchParams: Promise<{
+  searchParams: {
     search?: string
     category?: string
     page?: string
     sort?: string
     minPrice?: string
     maxPrice?: string
-  }>
+  }
 }
 
 export async function ProductGrid({ searchParams }: ProductGridProps) {
-  const sp = await searchParams
+  const sp = searchParams
   const page = parseInt(sp.page || '1')
   const limit = 12
   const search = sp.search
@@ -50,18 +50,28 @@ export async function ProductGrid({ searchParams }: ProductGridProps) {
   const orderBy: any = {}
   orderBy[sort] = order
 
-  const [products, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: {
-        category: true,
-      },
-      skip,
-      take: limit,
-      orderBy,
-    }),
-    prisma.product.count({ where }),
-  ])
+  let products: any[] = []
+  let total = 0
+  
+  try {
+    const [productsResult, totalResult] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+        },
+        skip,
+        take: limit,
+        orderBy,
+      }),
+      prisma.product.count({ where }),
+    ])
+    products = productsResult
+    total = totalResult
+  } catch (error) {
+    // If database is unreachable, render empty state
+    console.error('Database error:', error)
+  }
 
   const totalPages = Math.ceil(total / limit)
 

@@ -109,7 +109,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       } else {
         throw new Error("Failed to add to cart");
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add product to cart",
@@ -149,7 +149,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       } else {
         throw new Error("Failed to add to wishlist");
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add product to wishlist",

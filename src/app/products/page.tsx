@@ -5,7 +5,7 @@ import { ProductGrid } from "@/components/product/product-grid"
 import { ProductFilters } from "@/components/product/product-filters"
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface SearchParams {
+interface SearchParamsShape {
   search?: string
   category?: string
   page?: string
@@ -14,11 +14,19 @@ interface SearchParams {
   maxPrice?: string
 }
 
-export default function ProductsPage({
-  searchParams,
-}: {
-  searchParams: SearchParams
-}) {
+export default async function ProductsPage(
+  props: { searchParams: Promise<Record<string, string | string[] | undefined>> }
+) {
+  const raw = await props.searchParams
+  const pick = (k: string) => Array.isArray(raw[k]) ? (raw[k] as string[])[0] : (raw[k] as string | undefined)
+  const params: SearchParamsShape = {
+    search: pick('search'),
+    category: pick('category'),
+    page: pick('page'),
+    sort: pick('sort'),
+    minPrice: pick('minPrice'),
+    maxPrice: pick('maxPrice'),
+  }
   return (
     <>
       <Navbar />
@@ -33,7 +41,7 @@ export default function ProductsPage({
             {/* Products Grid */}
             <div className="lg:w-3/4">
               <Suspense fallback={<ProductGridSkeleton />}>
-                <ProductGrid searchParams={searchParams} />
+                <ProductGrid searchParams={params} />
               </Suspense>
             </div>
           </div>

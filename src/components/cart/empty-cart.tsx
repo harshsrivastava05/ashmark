@@ -10,7 +10,7 @@ export function EmptyCart() {
         <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
         <h3 className="text-xl font-semibold mb-2">Your cart is empty</h3>
         <p className="text-muted-foreground mb-6 text-center max-w-sm">
-          Looks like you haven't added any items to your cart yet. Start shopping to fill it up!
+          Looks like you haven&apos;t added any items to your cart yet. Start shopping to fill it up!
         </p>
         <Button asChild className="bg-crimson-600 hover:bg-crimson-700">
           <Link href="/products">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useRazorpay } from "react-razorpay"
@@ -8,7 +8,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// removed unused Separator import
+  // removed unused Separator import
 import { AddressForm } from "@/components/checkout/address-form"
 import { OrderSummary } from "@/components/checkout/order-summary"
 import { formatPrice } from "@/lib/utils"
@@ -34,17 +34,7 @@ export default function CheckoutPage() {
   const [orderTotal, setOrderTotal] = useState(0)
   const [processing, setProcessing] = useState(false)
 
-  useEffect(() => {
-    if (!session) {
-      router.push('/login')
-      return
-    }
-
-    fetchAddresses()
-    fetchOrderSummary()
-  }, [session, router])
-
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     try {
       const response = await fetch('/api/addresses')
       if (response.ok) {
@@ -58,9 +48,9 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error('Error fetching addresses:', error)
     }
-  }
+  }, [])
 
-  const fetchOrderSummary = async () => {
+  const fetchOrderSummary = useCallback(async () => {
     try {
       const response = await fetch('/api/cart')
       if (response.ok) {
@@ -77,7 +67,17 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error('Error fetching order summary:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!session) {
+      router.push('/login')
+      return
+    }
+
+    fetchAddresses()
+    fetchOrderSummary()
+  }, [session, router, fetchAddresses, fetchOrderSummary])
 
   const handlePayment = async () => {
     if (!selectedAddress) {
@@ -162,7 +162,7 @@ export default function CheckoutPage() {
         },
       }
 
-      const razorpayInstance = new Razorpay(options)
+      const razorpayInstance = new Razorpay(options as any)
       razorpayInstance.open()
     } catch (error) {
       console.error('Payment error:', error)

@@ -10,10 +10,12 @@ import { prisma } from "@/lib/db"
 export default async function ProductPage({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slugs: string }>
 }) {
+  const { slugs } = await params
+
   const product = await prisma.product.findUnique({
-    where: { slug: params.slug },
+    where: { slug: slugs },
     include: {
       category: true,
     },
@@ -32,13 +34,19 @@ export default async function ProductPage({
             {/* Product Images */}
             <ProductImages images={product.images} name={product.name} />
             
-            {/* Product Info */}
+            {/* Product Info */} 
             <ProductInfo product={{ ...product, price: Number(product.price), comparePrice: product.comparePrice ? Number(product.comparePrice) : null }} />
           </div>
           
           {/* Product Details Tabs */}
           <div className="mt-16">
-            <ProductTabs product={product} />
+            <ProductTabs 
+              product={{
+                ...product,
+                price: Number(product.price),
+                comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+              }} 
+            />
           </div>
           
           {/* Related Products */}

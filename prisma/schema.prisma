@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
@@ -38,21 +38,34 @@ model Session {
   @@map("sessions")
 }
 
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String    @unique
-  emailVerified DateTime? @map("email_verified")
+  email         String         @unique
+  emailVerified DateTime?      @map("email_verified")
   image         String?
-  password      String?   @db.Text
-  role          Role      @default(USER)
+  password      String?        @db.Text
+  role          Role           @default(USER)
   accounts      Account[]
   sessions      Session[]
   orders        Order[]
   cart          CartItem[]
   addresses     Address[]
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  wishlistItems WishlistItem[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -80,37 +93,38 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String?     @db.Text
-  price       Decimal     @db.Decimal(10, 2)
-  comparePrice Decimal?   @db.Decimal(10, 2)
-  images      String[]
-  sizes       Size[]
-  colors      Color[]
-  stock       Int         @default(0)
-  featured    Boolean     @default(false)
-  trending    Boolean     @default(false)
-  categoryId  String      @map("category_id")
-  category    Category    @relation(fields: [categoryId], references: [id])
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  description   String?        @db.Text
+  price         Decimal        @db.Decimal(10, 2)
+  comparePrice  Decimal?       @db.Decimal(10, 2)
+  images        String[]
+  sizes         Size[]
+  colors        Color[]
+  stock         Int            @default(0)
+  featured      Boolean        @default(false)
+  trending      Boolean        @default(false)
+  categoryId    String         @map("category_id")
+  category      Category       @relation(fields: [categoryId], references: [id])
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
 
   @@map("products")
 }
 
 model CartItem {
-  id        String  @id @default(cuid())
-  userId    String  @map("user_id")
-  productId String  @map("product_id")
-  quantity  Int     @default(1)
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
   size      Size?
   color     Color?
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -119,58 +133,67 @@ model CartItem {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  userId          String      @map("user_id")
-  status          OrderStatus @default(PENDING)
-  total           Decimal     @db.Decimal(10, 2)
-  subtotal        Decimal     @db.Decimal(10, 2)
-  tax             Decimal     @db.Decimal(10, 2)
-  shipping        Decimal     @db.Decimal(10, 2)
-  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
-  paymentMethod   String?     @map("payment_method")
-  razorpayOrderId String?     @map("razorpay_order_id")
-  razorpayPaymentId String?   @map("razorpay_payment_id")
-  user            User        @relation(fields: [userId], references: [id])
-  items           OrderItem[]
-  shippingAddress Address     @relation(fields: [addressId], references: [id])
-  addressId       String      @map("address_id")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  id                String        @id @default(cuid())
+  userId            String        @map("user_id")
+  status            OrderStatus   @default(PENDING)
+  total             Decimal       @db.Decimal(10, 2)
+  subtotal          Decimal       @db.Decimal(10, 2)
+  tax               Decimal       @db.Decimal(10, 2)
+  shipping          Decimal       @db.Decimal(10, 2)
+  paymentStatus     PaymentStatus @default(PENDING) @map("payment_status")
+  paymentMethod     String?       @map("payment_method")
+  razorpayOrderId   String?       @map("razorpay_order_id")
+  razorpayPaymentId String?       @map("razorpay_payment_id")
+  user              User          @relation(fields: [userId], references: [id])
+  items             OrderItem[]
+  shippingAddressId String?
+  shippingAddress   Address?      @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  addressId         String        @map("address_id")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
 
   @@map("orders")
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String  @map("order_id")
-  productId String  @map("product_id")
+  id        String   @id @default(cuid())
+  orderId   String   @map("order_id")
+  productId String   @map("product_id")
   quantity  Int
-  price     Decimal @db.Decimal(10, 2)
+  price     Decimal  @db.Decimal(10, 2)
   size      Size?
   color     Color?
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("order_items")
 }
 
 model Address {
-  id       String  @id @default(cuid())
-  userId   String  @map("user_id")
-  name     String
-  phone    String
-  street   String
-  city     String
-  state    String
-  pincode  String
-  country  String  @default("India")
-  isDefault Boolean @default(false) @map("is_default")
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders   Order[]
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        String      @id @default(cuid())
+  name      String
+  phone     String
+  street    String
+  city      String
+  state     String
+  pincode   String
+  country   String      @default("India")
+  type      AddressType @default(home)
+  isDefault Boolean     @default(false)
 
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Orders using this address
+  orders Order[] @relation("ShippingAddress")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isDefault])
   @@map("addresses")
 }
 
@@ -216,4 +239,10 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+enum AddressType {
+  home
+  work
+  other
 }

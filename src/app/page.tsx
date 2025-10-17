@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
@@ -10,10 +10,30 @@ import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 
 export default async function HomePage() {
-  let featuredProducts: any[] = []
-  let trendingProducts: any[] = []
+  let featuredProducts: Array<{
+    id: string
+    name: string
+    slug: string
+    price: number
+    comparePrice?: number | null
+    images: string[]
+    featured: boolean
+    trending: boolean
+    category: { name: string }
+  }> = []
+  let trendingProducts: Array<{
+    id: string
+    name: string
+    slug: string
+    price: number
+    comparePrice?: number | null
+    images: string[]
+    featured: boolean
+    trending: boolean
+    category: { name: string }
+  }> = []
   try {
-    ;[featuredProducts, trendingProducts] = await Promise.all([
+    const [featuredRaw, trendingRaw] = await Promise.all([
       prisma.product.findMany({
         where: { featured: true },
         take: 4,
@@ -25,7 +45,43 @@ export default async function HomePage() {
         include: { category: true },
       }),
     ])
+
+    const serialize = (p: any) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      price: Number(p.price),
+      comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
+      images: p.images,
+      featured: p.featured,
+      trending: p.trending,
+      category: { name: p.category.name },
+    })
+
+    featuredProducts = featuredRaw.map(serialize)
+    trendingProducts = trendingRaw.map(serialize)
+
+    // If no featured products, get any products for recommended section
+    if (featuredProducts.length === 0) {
+      const anyFeatured = await prisma.product.findMany({
+        take: 4,
+        include: { category: true },
+        orderBy: { createdAt: 'desc' },
+      })
+      featuredProducts = anyFeatured.map(serialize)
+    }
+
+    // If no trending products, get any products for trending section
+    if (trendingProducts.length === 0) {
+      const anyTrending = await prisma.product.findMany({
+        take: 4,
+        include: { category: true },
+        orderBy: { createdAt: 'desc' },
+      })
+      trendingProducts = anyTrending.map(serialize)
+    }
   } catch (e) {
+    console.error('Database error:', e)
     // If the database is unreachable, render the page without products
   }
 
@@ -64,18 +120,18 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Our Products Section */}
+        {/* Recommended Products Section */}
         <section className="py-16 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Products</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Recommended For You</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Discover our latest drop of premium t-shirts designed for style and comfort
+                Handpicked premium t-shirts designed for style and comfort
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={{ ...product, price: product.price.toNumber(), comparePrice: product.comparePrice?.toNumber() }} />
+                <ProductCard key={product.id} product={product as any} />
               ))}
             </div>
             <div className="text-center mt-8">
@@ -97,7 +153,7 @@ export default async function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {trendingProducts.map((product) => (
-                <ProductCard key={product.id} product={{ ...product, price: product.price.toNumber(), comparePrice: product.comparePrice?.toNumber() }} />
+                <ProductCard key={product.id} product={product as any} />
               ))}
             </div>
           </div>

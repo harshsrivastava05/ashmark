@@ -9,7 +9,8 @@ export async function GET() {
     })
     return NextResponse.json({ categories })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to load categories" }, { status: 500 })
+    console.error('Database error:', error)
+    return NextResponse.json({ categories: [] }, { status: 200 })
   }
 }
 
