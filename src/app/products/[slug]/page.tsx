@@ -9,21 +9,15 @@ import { prisma } from "@/lib/db"
 
 export default async function ProductPage({
   params,
-}: {
-  params: Promise<{ slugs: string }>
-}) {
-  const { slugs } = await params
+}: { params: { slug: string } }) {
+  const { slug } = params
 
   const product = await prisma.product.findUnique({
-    where: { slug: slugs },
-    include: {
-      category: true,
-    },
+    where: { slug },
+    include: { category: true },
   })
 
-  if (!product) {
-    notFound()
-  }
+  if (!product) notFound()
 
   return (
     <>
@@ -31,25 +25,30 @@ export default async function ProductPage({
       <main className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Product Images */}
             <ProductImages images={product.images} name={product.name} />
-            
-            {/* Product Info */} 
-            <ProductInfo product={{ ...product, price: Number(product.price), comparePrice: product.comparePrice ? Number(product.comparePrice) : null }} />
-          </div>
-          
-          {/* Product Details Tabs */}
-          <div className="mt-16">
-            <ProductTabs 
+            <ProductInfo
               product={{
                 ...product,
                 price: Number(product.price),
-                comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
-              }} 
+                comparePrice: product.comparePrice
+                  ? Number(product.comparePrice)
+                  : null,
+              }}
             />
           </div>
-          
-          {/* Related Products */}
+
+          <div className="mt-16">
+            <ProductTabs
+              product={{
+                ...product,
+                price: Number(product.price),
+                comparePrice: product.comparePrice
+                  ? Number(product.comparePrice)
+                  : null,
+              }}
+            />
+          </div>
+
           <div className="mt-16">
             <RelatedProducts
               categoryId={product.categoryId}
