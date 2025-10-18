@@ -20,16 +20,37 @@ export const config = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password required")
+        }
+        
         try {
-          const user = await prisma.user.findUnique({ where: { email: credentials.email as string } })
-          if (!user || !user.password) return null
-          const valid = await bcrypt.compare(credentials.password as string, user.password)
-          if (!valid) return null
-          return { id: user.id, name: user.name, email: user.email, role: user.role }
+          const user = await prisma.user.findUnique({ 
+            where: { email: credentials.email as string } 
+          })
+          
+          if (!user || !user.password) {
+            throw new Error("Invalid credentials")
+          }
+          
+          const valid = await bcrypt.compare(
+            credentials.password as string, 
+            user.password
+          )
+          
+          if (!valid) {
+            throw new Error("Invalid credentials")
+          }
+          
+          return { 
+            id: user.id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role 
+          }
         } catch (error) {
-          console.error('Database error during auth:', error)
-          return null
+          console.error('Auth error:', error)
+          throw new Error("Authentication failed")
         }
       },
     }),
@@ -38,13 +59,11 @@ export const config = {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          // Check if user exists and preserve their role
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! }
           })
           
           if (existingUser) {
-            // Update user info but preserve role
             await prisma.user.update({
               where: { id: existingUser.id },
               data: {
@@ -54,32 +73,58 @@ export const config = {
               }
             })
           }
-          return true
         } catch (error) {
           console.error('Error in signIn callback:', error)
-          return true
         }
       }
       return true
     },
-    async session({ session, user }) {
-      if (session?.user && user) {
-        session.user.id = user.id
-        session.user.role = user.role
-      }
-      return session
-    },
-    async jwt({ user, token }) {
+    async jwt({ token, user, trigger, session }) {
+      // When user signs in, add their role to the token
       if (user) {
+        token.id = user.id
         token.role = user.role
       }
+      
+      // Handle session updates (if you update profile, etc.)
+      if (trigger === "update" && session) {
+        token.name = session.user.name
+        token.email = session.user.email
+      }
+      
+      // For Google sign-in, fetch role from database
+      if (token.email && !token.role) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email },
+            select: { id: true, role: true }
+          })
+          if (dbUser) {
+            token.id = dbUser.id
+            token.role = dbUser.role
+          }
+        } catch (error) {
+          console.error('Error fetching user role:', error)
+        }
+      }
+      
       return token
+    },
+    async session({ session, token }) {
+      // Add user id and role from token to session
+      if (session?.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+      }
+      return session
     },
   },
   pages: {
     signIn: '/login',
   },
-  session: { strategy: "database" },
+  session: { 
+    strategy: "jwt"
+  },
 } as NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)

@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { User, Mail, Calendar, Shield, Edit, Camera, Star } from "lucide-react"
+import { User, Mail, Calendar, Shield, Edit, Star } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { EditProfileDialog } from "@/components/profile/edit-profile-dialog"
 
@@ -15,13 +15,12 @@ interface User {
   email?: string | null
   image?: string | null
   role?: string
+  createdAt?: string
 }
 
 interface ProfileStats {
   totalOrders: number
-  // totalSpent: number
   loyaltyPoints: number
-  // memberTier: string
   memberSince: string
 }
 
@@ -42,22 +41,32 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
   const fetchProfileStats = async () => {
     try {
       const response = await fetch('/api/profile/stats')
-      const data = await response.json()
-      setStats(data)
-      setLoading(false)
-      } catch (error) {
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
+      }
+    } catch (error) {
       console.error('Error fetching profile stats:', error)
+    } finally {
       setLoading(false)
     }
   }
 
-  // Mock data - in real app, fetch from API
-  const displayStats = stats || {
-    totalOrders: 0,
-    // totalSpent: 0,
-    loyaltyPoints: 0,
-    // memberTier: 'Bronze',
-    memberSince: new Date().toISOString().split('T')
+  // Get member since date - use stats if available, otherwise use user.createdAt or current date
+  const getMemberSinceDate = () => {
+    if (stats?.memberSince) {
+      return new Date(stats.memberSince)
+    }
+    if (currentUser.createdAt) {
+      return new Date(currentUser.createdAt)
+    }
+    return new Date()
+  }
+
+  const displayStats = {
+    totalOrders: stats?.totalOrders || 0,
+    loyaltyPoints: stats?.loyaltyPoints || 0,
+    memberSince: getMemberSinceDate()
   }
 
   const handleProfileUpdate = (updatedUser: any) => {
@@ -72,7 +81,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             {/* Profile Image */}
             <div className="relative group">
-              <div className="w-20 h-20 bg-muted flex items-center justify-center overflow-hidden">
+              <div className="w-20 h-20 bg-muted flex items-center justify-center overflow-hidden rounded-full">
                 {currentUser.image ? (
                   <Image
                     src={currentUser.image}
@@ -85,7 +94,6 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                   <User className="w-8 h-8 text-muted-foreground" />
                 )}
               </div>
-              
             </div>
 
             {/* User Info */}
@@ -107,7 +115,9 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground mt-1">
                     <Calendar className="w-4 h-4" />
-                    <span>Member since {formatDate(new Date(displayStats.memberSince[0] + 'T' + displayStats.memberSince[1]))}</span>
+                    <span>
+                      Member since {loading ? '...' : formatDate(displayStats.memberSince)}
+                    </span>
                   </div>
                 </div>
                 
@@ -122,30 +132,20 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-muted/30 p-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-muted/30 p-3 rounded-lg">
                   <div className="text-xl font-bold text-crimson-600">
-                    {displayStats.totalOrders}
+                    {loading ? '...' : displayStats.totalOrders}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Orders</div>
                 </div>
-                {/* <div className="bg-muted/30 p-3">
-                  <div className="text-xl font-bold text-crimson-600">
-                    ₹{displayStats.totalSpent.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Total Spent</div>
-                </div> */}
-                <div className="bg-muted/30 p-3">
+                <div className="bg-muted/30 p-3 rounded-lg">
                   <div className="text-xl font-bold text-crimson-600 flex items-center gap-1">
                     <Star className="w-4 h-4" />
-                    {displayStats.loyaltyPoints}
+                    {loading ? '...' : displayStats.loyaltyPoints}
                   </div>
                   <div className="text-sm text-muted-foreground">Loyalty Points</div>
                 </div>
-                {/* <div className="bg-muted/30 p-3">
-                  <div className="text-xl font-bold text-green-600">Gold</div>
-                  <div className="text-sm text-muted-foreground">Member Tier</div>
-                </div> */}
               </div>
             </div>
           </div>
