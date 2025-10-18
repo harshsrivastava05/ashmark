@@ -1,10 +1,11 @@
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Ruler, Shirt, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { RotateCcw, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import Link from "next/link"
 
-export default function SizeGuidePage() {
+export default function ReturnsPage() {
   return (
     <>
       <Navbar />
@@ -12,27 +13,27 @@ export default function SizeGuidePage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4">Size Guide</h1>
+            <h1 className="text-4xl font-bold mb-4">Returns & Exchanges</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Find your perfect fit with our comprehensive size guide. 
-              We've designed our t-shirts to be true to size for the best comfort.
+              Not satisfied with your purchase? No problem! We offer easy returns and exchanges 
+              within 30 days of delivery.
             </p>
           </div>
 
-          {/* How to Measure */}
+          {/* Return Policy */}
           <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8">How to Measure</h2>
+            <h2 className="text-2xl font-bold text-center mb-8">Return Policy</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Ruler className="h-5 w-5 text-crimson-600" />
-                    Chest
+                    <Clock className="h-5 w-5 text-crimson-600" />
+                    30-Day Window
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Measure around the fullest part of your chest, keeping the tape measure horizontal.
+                    You have 30 days from the delivery date to initiate a return or exchange.
                   </p>
                 </CardContent>
               </Card>
@@ -40,13 +41,13 @@ export default function SizeGuidePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shirt className="h-5 w-5 text-crimson-600" />
-                    Length
+                    <CheckCircle className="h-5 w-5 text-crimson-600" />
+                    Easy Process
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Measure from the highest point of the shoulder to the bottom hem.
+                    Start your return online in just a few clicks. No need to call customer service.
                   </p>
                 </CardContent>
               </Card>
@@ -54,173 +55,213 @@ export default function SizeGuidePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-crimson-600" />
-                    Tips
+                    <RotateCcw className="h-5 w-5 text-crimson-600" />
+                    Free Returns
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Wear a well-fitting t-shirt while measuring and keep the tape snug but not tight.
+                    We provide free return shipping for all returns within India.
                   </p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* Size Chart */}
+          {/* Return Conditions */}
           <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8">Size Chart</h2>
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Size</TableHead>
-                      <TableHead>Chest (inches)</TableHead>
-                      <TableHead>Chest (cm)</TableHead>
-                      <TableHead>Length (inches)</TableHead>
-                      <TableHead>Length (cm)</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">XS</TableCell>
-                      <TableCell>32-34</TableCell>
-                      <TableCell>81-86</TableCell>
-                      <TableCell>26</TableCell>
-                      <TableCell>66</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">S</TableCell>
-                      <TableCell>34-36</TableCell>
-                      <TableCell>86-91</TableCell>
-                      <TableCell>27</TableCell>
-                      <TableCell>69</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">M</TableCell>
-                      <TableCell>36-38</TableCell>
-                      <TableCell>91-97</TableCell>
-                      <TableCell>28</TableCell>
-                      <TableCell>71</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">L</TableCell>
-                      <TableCell>38-40</TableCell>
-                      <TableCell>97-102</TableCell>
-                      <TableCell>29</TableCell>
-                      <TableCell>74</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">XL</TableCell>
-                      <TableCell>40-42</TableCell>
-                      <TableCell>102-107</TableCell>
-                      <TableCell>30</TableCell>
-                      <TableCell>76</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">XXL</TableCell>
-                      <TableCell>42-44</TableCell>
-                      <TableCell>107-112</TableCell>
-                      <TableCell>31</TableCell>
-                      <TableCell>79</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Fit Guide */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8">Fit Guide</h2>
+            <h2 className="text-2xl font-bold text-center mb-8">Return Conditions</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Regular Fit</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="h-5 w-5" />
+                    What We Accept
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Our regular fit t-shirts are designed for everyday comfort with a relaxed silhouette 
-                    that's not too tight or too loose.
-                  </p>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li>• Comfortable chest measurement</li>
-                    <li>• Standard sleeve length</li>
-                    <li>• Relaxed through the body</li>
-                    <li>• Perfect for casual wear</li>
+                  <ul className="space-y-2 text-sm">
+                    <li>• Items in original condition with tags attached</li>
+                    <li>• Unworn and unwashed items</li>
+                    <li>• Original packaging included</li>
+                    <li>• Items purchased within 30 days</li>
+                    <li>• Defective or damaged items</li>
+                    <li>• Wrong size or color exchanges</li>
                   </ul>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Slim Fit</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-red-600">
+                    <AlertCircle className="h-5 w-5" />
+                    What We Don't Accept
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Our slim fit t-shirts offer a more tailored look while maintaining comfort and mobility.
-                  </p>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li>• Tapered through the body</li>
-                    <li>• Shorter sleeve length</li>
-                    <li>• Modern, fitted silhouette</li>
-                    <li>• Great for layering</li>
+                  <ul className="space-y-2 text-sm">
+                    <li>• Items worn or washed</li>
+                    <li>• Items without original tags</li>
+                    <li>• Items damaged by customer</li>
+                    <li>• Items returned after 30 days</li>
+                    <li>• Custom or personalized items</li>
+                    <li>• Items with strong odors or stains</li>
                   </ul>
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* Care Instructions */}
+          {/* How to Return */}
           <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8">Care Instructions</h2>
+            <h2 className="text-2xl font-bold text-center mb-8">How to Return</h2>
+            <div className="grid md:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center">1. Start Return</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="w-12 h-12 bg-crimson-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-crimson-600 font-bold">1</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Log into your account and go to your order history
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center">2. Select Items</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="w-12 h-12 bg-crimson-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-crimson-600 font-bold">2</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Choose the items you want to return and reason
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center">3. Print Label</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="w-12 h-12 bg-crimson-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-crimson-600 font-bold">3</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Print the prepaid return label we provide
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center">4. Ship Back</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="w-12 h-12 bg-crimson-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-crimson-600 font-bold">4</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Package items and drop off at any courier location
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Refund Process */}
+          <div className="mb-16">
+            <h2 className="text-2xl font-bold text-center mb-8">Refund Process</h2>
             <Card>
               <CardContent className="pt-6">
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-3 gap-8">
                   <div>
-                    <h3 className="font-semibold mb-4">Washing</h3>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li>• Machine wash cold with like colors</li>
-                      <li>• Use gentle cycle</li>
-                      <li>• Avoid bleach</li>
-                      <li>• Turn inside out before washing</li>
-                    </ul>
+                    <h3 className="font-semibold mb-4">Processing Time</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Once we receive your return, we'll process it within 2-3 business days.
+                    </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4">Drying & Ironing</h3>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li>• Tumble dry low heat</li>
-                      <li>• Remove promptly from dryer</li>
-                      <li>• Iron on low heat if needed</li>
-                      <li>• Do not over-dry</li>
-                    </ul>
+                    <h3 className="font-semibold mb-4">Refund Method</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Refunds are issued to the original payment method used for the purchase.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-4">Refund Timeline</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Credit card refunds take 5-10 business days, UPI refunds take 2-3 business days.
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Size Recommendation */}
+          {/* Exchange Process */}
+          <div className="mb-16">
+            <h2 className="text-2xl font-bold text-center mb-8">Exchange Process</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Size Exchange</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    Need a different size? We'll send you the new size and you can return the old one.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Free size exchanges within 30 days</li>
+                    <li>• We'll ship the new size immediately</li>
+                    <li>• Return the old size using our prepaid label</li>
+                    <li>• No additional charges for size exchanges</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Color Exchange</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    Want a different color? We'll help you exchange it for the color you prefer.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Color exchanges subject to availability</li>
+                    <li>• We'll notify you if the color is out of stock</li>
+                    <li>• You can choose a refund if color isn't available</li>
+                    <li>• Free shipping for color exchanges</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Contact Support */}
           <div className="text-center">
             <Card>
               <CardContent className="pt-6">
-                <h2 className="text-xl font-bold mb-4">Still Not Sure?</h2>
+                <h2 className="text-xl font-bold mb-4">Need Help with Your Return?</h2>
                 <p className="text-muted-foreground mb-6">
-                  If you're between sizes, we recommend sizing up for a more relaxed fit or sizing down 
-                  for a more fitted look. Our customer service team is always happy to help!
+                  Our customer service team is here to help with any questions about returns or exchanges.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="/contact" className="inline-block">
-                    <button className="px-6 py-2 bg-crimson-600 text-white rounded-md hover:bg-crimson-700 transition-colors">
-                      Contact Us
-                    </button>
-                  </a>
-                  <a href="/products" className="inline-block">
-                    <button className="px-6 py-2 border border-crimson-600 text-crimson-600 rounded-md hover:bg-crimson-50 transition-colors">
-                      Shop Now
-                    </button>
-                  </a>
+                  <Link href="/contact">
+                    <Button className="bg-crimson-600 hover:bg-crimson-700">
+                      Contact Support
+                    </Button>
+                  </Link>
+                  <Link href="/orders">
+                    <Button variant="outline">
+                      View Orders
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -229,5 +270,5 @@ export default function SizeGuidePage() {
       </main>
       <Footer />
     </>
-  )
+  );
 }

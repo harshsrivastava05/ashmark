@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MessageCircle, Phone, Mail, Clock, Send } from "lucide-react"
+import { Phone, Mail, Clock, Send } from "lucide-react"
 
 export default function SupportPage() {
   return (
@@ -22,24 +22,7 @@ export default function SupportPage() {
           </div>
 
           {/* Support Options */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-crimson-600" />
-                  Live Chat
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Chat with our support team in real-time for immediate assistance.
-                </p>
-                <Button className="w-full bg-crimson-600 hover:bg-crimson-700">
-                  Start Chat
-                </Button>
-              </CardContent>
-            </Card>
-
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -240,19 +223,7 @@ export default function SupportPage() {
           {/* Response Times */}
           <div className="mt-16">
             <h2 className="text-2xl font-bold text-center mb-8">Response Times</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-center">Live Chat</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="text-2xl font-bold text-crimson-600 mb-2">Immediate</div>
-                  <p className="text-sm text-muted-foreground">
-                    Get instant responses during business hours
-                  </p>
-                </CardContent>
-              </Card>
-
+            <div className="grid md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-center">Phone Support</CardTitle>

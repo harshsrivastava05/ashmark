@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { RotateCcw, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import Link from "next/link"
 
 export default function ReturnsPage() {
   return (
@@ -252,16 +253,16 @@ export default function ReturnsPage() {
                   Our customer service team is here to help with any questions about returns or exchanges.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="/contact" className="inline-block">
+                  <Link href="/contact">
                     <Button className="bg-crimson-600 hover:bg-crimson-700">
                       Contact Support
                     </Button>
-                  </a>
-                  <a href="/orders" className="inline-block">
+                  </Link>
+                  <Link href="/orders">
                     <Button variant="outline">
                       View Orders
                     </Button>
-                  </a>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

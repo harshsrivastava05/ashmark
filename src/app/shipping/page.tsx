@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Truck, Clock, MapPin, Package, CheckCircle } from "lucide-react"
+import Link from "next/link"
 
 export default function ShippingPage() {
   return (
@@ -244,16 +245,16 @@ export default function ShippingPage() {
                   You can also track your order in your account dashboard.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="/orders" className="inline-block">
+                  <Link href="/orders">
                     <button className="px-6 py-2 bg-crimson-600 text-white rounded-md hover:bg-crimson-700 transition-colors">
                       Track Order
                     </button>
-                  </a>
-                  <a href="/contact" className="inline-block">
+                  </Link>
+                  <Link href="/contact">
                     <button className="px-6 py-2 border border-crimson-600 text-crimson-600 rounded-md hover:bg-crimson-50 transition-colors">
                       Need Help?
                     </button>
-                  </a>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
