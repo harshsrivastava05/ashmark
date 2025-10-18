@@ -26,8 +26,7 @@ export async function POST(request: NextRequest) {
     // Compute totals from cart to avoid hardcoded values
     const subtotal = cartItems.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
     const shipping = subtotal > 1000 ? 0 : (cartItems.length > 0 ? 100 : 0)
-    const tax = 0
-    const computedTotal = subtotal + shipping + tax
+    const computedTotal = subtotal + shipping
 
     // If client sent amount, prefer computed to avoid tampering
     const finalAmount = computedTotal
@@ -47,10 +46,11 @@ export async function POST(request: NextRequest) {
         data: {
           total: finalAmount,
           subtotal: subtotal,
-          tax: tax,
+          tax: 0,
           shipping: shipping,
           razorpayOrderId: razorpayOrder.id,
           addressId,
+          shippingAddressId: addressId, // Set shippingAddressId to link the address
         },
       })
     } else {
@@ -59,10 +59,11 @@ export async function POST(request: NextRequest) {
           userId: session.user.id,
           total: finalAmount,
           subtotal: subtotal,
-          tax: tax,
+          tax: 0,
           shipping: shipping,
           razorpayOrderId: razorpayOrder.id,
           addressId,
+          shippingAddressId: addressId, // Set shippingAddressId to link the address
           items: {
             create: cartItems.map((ci) => ({
               productId: ci.productId,

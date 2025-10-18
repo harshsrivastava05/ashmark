@@ -42,7 +42,7 @@ interface AdminOrderDetailsProps {
       state: string
       pincode: string
       country: string
-    }
+    } | null
     user: {
       id: string
       name: string | null
@@ -153,10 +153,6 @@ export function AdminOrderDetails({ order }: AdminOrderDetailsProps) {
               <span>Shipping</span>
               <span>{Number(order.shipping) === 0 ? 'Free' : formatPrice(Number(order.shipping))}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>Tax (GST)</span>
-              <span>{formatPrice(Number(order.tax))}</span>
-            </div>
             <Separator />
             <div className="flex justify-between font-semibold text-lg">
               <span>Total</span>
@@ -216,14 +212,20 @@ export function AdminOrderDetails({ order }: AdminOrderDetailsProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1 text-sm">
-              <div className="font-medium text-base">{order.shippingAddress.name}</div>
-              <div>{order.shippingAddress.street}</div>
-              <div>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.pincode}</div>
-              <div>{order.shippingAddress.country}</div>
-              <Separator className="my-2" />
-              <div><span className="font-medium">Phone:</span> {order.shippingAddress.phone}</div>
-            </div>
+            {order.shippingAddress ? (
+              <div className="space-y-1 text-sm">
+                <div className="font-medium text-base">{order.shippingAddress.name}</div>
+                <div>{order.shippingAddress.street}</div>
+                <div>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.pincode}</div>
+                <div>{order.shippingAddress.country}</div>
+                <Separator className="my-2" />
+                <div><span className="font-medium">Phone:</span> {order.shippingAddress.phone}</div>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                No shipping address provided
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

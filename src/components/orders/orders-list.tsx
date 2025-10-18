@@ -49,7 +49,7 @@ interface Order {
     city: string
     state: string
     pincode: string
-  }
+  } | null
 }
 
 interface OrdersListProps {
@@ -283,7 +283,7 @@ export function OrdersList({ userId, searchParams }: OrdersListProps) {
                   
                   {/* Shipping Address */}
                   <div className="mt-4 text-sm text-muted-foreground">
-                    <span className="font-medium">Shipping to:</span> {order.shippingAddress.name}, {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.pincode}
+                    <span className="font-medium">Shipping to:</span> {order.shippingAddress ? `${order.shippingAddress.name}, ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.pincode}` : 'No address provided'}
                   </div>
                 </div>
               </CardContent>

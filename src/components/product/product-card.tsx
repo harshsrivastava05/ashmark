@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/utils"
-import { ShoppingCart, Heart } from "lucide-react"
+import { ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useTransition } from "react"
 import { toast } from "@/components/ui/use-toast"
+import { cn } from "@/lib/utils"
 
 interface ProductCardProps {
   product: {
@@ -33,6 +34,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const [isPending] = useTransition()
   const [adding, setAdding] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+
+  const images = product.images.length > 0 ? product.images : ['/placeholder-product.jpg']
+  const hasMultipleImages = images.length > 1
 
   const addToCart = async () => {
     setAdding(true)
@@ -54,17 +60,78 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   }
 
+  const nextImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex((prev) => (prev + 1) % images.length)
+  }
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
+
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative aspect-square overflow-hidden">
+      <div 
+        className="relative aspect-square overflow-hidden"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <Link href={`/products/${product.slug}`}>
           <Image
-            src={product.images[0] || '/placeholder-product.jpg'}
+            src={images[currentImageIndex]}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
+        
+        {/* Image Navigation Buttons */}
+        {hasMultipleImages && isHovered && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+
+        {/* Image Indicators */}
+        {hasMultipleImages && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setCurrentImageIndex(index)
+                }}
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full transition-all",
+                  currentImageIndex === index 
+                    ? "bg-white w-4" 
+                    : "bg-white/50"
+                )}
+              />
+            ))}
+          </div>
+        )}
+        
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {product.featured && (
             <Badge className="bg-crimson-600">Featured</Badge>

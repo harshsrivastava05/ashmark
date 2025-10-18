@@ -93,10 +93,6 @@ export function PaymentSummary({ order }: PaymentSummaryProps) {
                   )}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>Tax (GST)</span>
-                <span>{formatPrice(Number(order.tax))}</span>
-              </div>
               <Separator />
               <div className="flex justify-between font-semibold text-lg">
                 <span>Total</span>

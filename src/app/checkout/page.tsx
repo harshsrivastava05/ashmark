@@ -61,8 +61,7 @@ export default function CheckoutPage() {
           0
         )
         const shipping = subtotal > 1000 ? 0 : 100
-        const tax = subtotal * 0.1
-        setOrderTotal(subtotal + shipping + tax)
+        setOrderTotal(subtotal + shipping)
       }
     } catch (error) {
       console.error('Error fetching order summary:', error)

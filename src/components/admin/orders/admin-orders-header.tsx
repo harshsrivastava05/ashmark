@@ -39,11 +39,6 @@ export function AdminOrdersHeader() {
             <Download className="w-4 h-4 mr-2" />
             Export Orders
           </Button>
-          <Button asChild className="bg-crimson-600 hover:bg-crimson-700 border-0">
-            <Link href="/admin/orders/bulk-actions">
-              Bulk Actions
-            </Link>
-          </Button>
         </div>
       </div>
 

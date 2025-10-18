@@ -20,7 +20,7 @@ export default async function PaymentPage({
 
   let order = null
   if (params.orderId) {
-    order = await prisma.order.findFirst({
+    const rawOrder = await prisma.order.findFirst({
       where: {
         id: params.orderId,
         userId: session.user.id,
@@ -35,8 +35,26 @@ export default async function PaymentPage({
       },
     })
 
-    if (!order) {
+    if (!rawOrder) {
       redirect('/orders')
+    }
+
+    // Serialize Decimal fields to numbers for client components
+    order = {
+      ...rawOrder,
+      total: Number(rawOrder.total),
+      subtotal: Number(rawOrder.subtotal),
+      tax: Number(rawOrder.tax),
+      shipping: Number(rawOrder.shipping),
+      items: rawOrder.items.map(item => ({
+        ...item,
+        price: Number(item.price),
+        product: {
+          ...item.product,
+          price: Number(item.product.price),
+          comparePrice: item.product.comparePrice ? Number(item.product.comparePrice) : null,
+        }
+      })),
     }
   }
 

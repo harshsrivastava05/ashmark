@@ -48,16 +48,23 @@ export default async function OrderDetailsPage({
     notFound();
   }
 
-  // Serialize dates to strings for client components
+  // Serialize dates and Decimal fields to strings/numbers for client components
   const serializedOrder = {
     ...order,
+    total: Number(order.total),
+    subtotal: Number(order.subtotal),
+    tax: Number(order.tax),
+    shipping: Number(order.shipping),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
     items: order.items.map(item => ({
       ...item,
+      price: Number(item.price),
       createdAt: item.createdAt.toISOString(),
       product: {
         ...item.product,
+        price: Number(item.product.price),
+        comparePrice: item.product.comparePrice ? Number(item.product.comparePrice) : null,
         createdAt: item.product.createdAt.toISOString(),
         updatedAt: item.product.updatedAt.toISOString(),
         category: {

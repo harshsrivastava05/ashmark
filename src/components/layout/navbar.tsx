@@ -42,7 +42,6 @@ export function Navbar() {
   const navigation = [
     { name: "Home", href: "/" },
     { name: "Our Products", href: "/products" },
-    { name: "Our Store", href: "#store" },
   ]
 
   return (

@@ -100,8 +100,7 @@ export default function CartPage() {
     0
   )
   const shipping = subtotal > 1000 ? 0 : 100
-  const tax = subtotal * 0.1
-  const total = subtotal + shipping + tax
+  const total = subtotal + shipping
 
   if (loading) {
     return (
@@ -171,10 +170,6 @@ export default function CartPage() {
                         formatPrice(shipping)
                       )}
                     </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tax</span>
-                    <span>{formatPrice(tax)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-semibold text-lg">

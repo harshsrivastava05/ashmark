@@ -85,7 +85,6 @@ export function AdminOrdersTable({ searchParams }: AdminOrdersTableProps) {
   const [sortBy, setSortBy] = useState(searchParams.sort || "createdAt")
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.page || "1"))
   const [totalPages, setTotalPages] = useState(1)
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
 
   useEffect(() => {
     fetchOrders()
@@ -311,19 +310,6 @@ export function AdminOrdersTable({ searchParams }: AdminOrdersTableProps) {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border">
-                <TableHead className="w-12">
-                  <input 
-                    type="checkbox" 
-                    className="w-4 h-4"
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedOrders(orders.map(o => o.id))
-                      } else {
-                        setSelectedOrders([])
-                      }
-                    }}
-                  />
-                </TableHead>
                 <TableHead>Order</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Items</TableHead>
@@ -337,27 +323,13 @@ export function AdminOrdersTable({ searchParams }: AdminOrdersTableProps) {
             <TableBody>
               {orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No orders found matching your criteria
                   </TableCell>
                 </TableRow>
               ) : (
                 orders.map((order) => (
                   <TableRow key={order.id} className="border-b border-border hover:bg-muted/30">
-                    <TableCell>
-                      <input 
-                        type="checkbox"
-                        className="w-4 h-4"
-                        checked={selectedOrders.includes(order.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedOrders([...selectedOrders, order.id])
-                          } else {
-                            setSelectedOrders(selectedOrders.filter(id => id !== order.id))
-                          }
-                        }}
-                      />
-                    </TableCell>
                     
                     <TableCell>
                       <div>
@@ -521,30 +493,6 @@ export function AdminOrdersTable({ searchParams }: AdminOrdersTableProps) {
           </div>
         )}
 
-        {/* Bulk Actions */}
-        {selectedOrders.length > 0 && (
-          <div className="mt-4 p-4 bg-muted/30 flex items-center justify-between">
-            <span className="text-sm">
-              {selectedOrders.length} orders selected
-            </span>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-0"
-                onClick={() => setSelectedOrders([])}
-              >
-                Clear Selection
-              </Button>
-              <Button 
-                size="sm"
-                className="bg-crimson-600 hover:bg-crimson-700 border-0"
-              >
-                Bulk Update Status
-              </Button>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

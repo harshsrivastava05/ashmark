@@ -1,37 +1,37 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowRight, ShoppingBag, Star } from "lucide-react"
-import { prisma } from "@/lib/db"
-import { ProductCard } from "@/components/product/product-card"
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, ShoppingBag, Star } from "lucide-react";
+import { prisma } from "@/lib/db";
+import { ProductCard } from "@/components/product/product-card";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
 
 export default async function HomePage() {
   let featuredProducts: Array<{
-    id: string
-    name: string
-    slug: string
-    price: number
-    comparePrice?: number | null
-    images: string[]
-    featured: boolean
-    trending: boolean
-    category: { name: string }
-  }> = []
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    comparePrice?: number | null;
+    images: string[];
+    featured: boolean;
+    trending: boolean;
+    category: { name: string };
+  }> = [];
   let trendingProducts: Array<{
-    id: string
-    name: string
-    slug: string
-    price: number
-    comparePrice?: number | null
-    images: string[]
-    featured: boolean
-    trending: boolean
-    category: { name: string }
-  }> = []
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    comparePrice?: number | null;
+    images: string[];
+    featured: boolean;
+    trending: boolean;
+    category: { name: string };
+  }> = [];
   try {
     const [featuredRaw, trendingRaw] = await Promise.all([
       prisma.product.findMany({
@@ -44,7 +44,7 @@ export default async function HomePage() {
         take: 4,
         include: { category: true },
       }),
-    ])
+    ]);
 
     const serialize = (p: any) => ({
       id: p.id,
@@ -56,19 +56,19 @@ export default async function HomePage() {
       featured: p.featured,
       trending: p.trending,
       category: { name: p.category.name },
-    })
+    });
 
-    featuredProducts = featuredRaw.map(serialize)
-    trendingProducts = trendingRaw.map(serialize)
+    featuredProducts = featuredRaw.map(serialize);
+    trendingProducts = trendingRaw.map(serialize);
 
     // If no featured products, get any products for recommended section
     if (featuredProducts.length === 0) {
       const anyFeatured = await prisma.product.findMany({
         take: 4,
         include: { category: true },
-        orderBy: { createdAt: 'desc' },
-      })
-      featuredProducts = anyFeatured.map(serialize)
+        orderBy: { createdAt: "desc" },
+      });
+      featuredProducts = anyFeatured.map(serialize);
     }
 
     // If no trending products, get any products for trending section
@@ -76,12 +76,12 @@ export default async function HomePage() {
       const anyTrending = await prisma.product.findMany({
         take: 4,
         include: { category: true },
-        orderBy: { createdAt: 'desc' },
-      })
-      trendingProducts = anyTrending.map(serialize)
+        orderBy: { createdAt: "desc" },
+      });
+      trendingProducts = anyTrending.map(serialize);
     }
   } catch (e) {
-    console.error('Database error:', e)
+    console.error("Database error:", e);
     // If the database is unreachable, render the page without products
   }
 
@@ -91,30 +91,36 @@ export default async function HomePage() {
       <main>
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          <video
-            autoPlay
-            muted
-            loop
-            className="absolute inset-0 hero-video"
-          >
+          <video autoPlay muted loop className="absolute inset-0 hero-video">
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/50" />
-          <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              ASHMARK
-            </h1>
+            <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">ASHMARK</h1>
             <p className="text-xl md:text-2xl mb-8 text-gray-200">
               Premium T-Shirts. Unique Designs. Unmatched Quality.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-crimson-600 hover:bg-crimson-700">
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                Shop Now
+              <Button
+                size="lg"
+                className="bg-crimson-600 hover:bg-crimson-700"
+                asChild
+              >
+                <Link href="/products">
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Shop Now
+                </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-black">
-                Explore Collection
-                <ArrowRight className="ml-2 h-5 w-5" />
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-white border-white hover:bg-white hover:text-black"
+                asChild
+              >
+                <Link href="/products">
+                  Explore Collection
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
             </div>
           </div>
@@ -124,7 +130,9 @@ export default async function HomePage() {
         <section className="py-16 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Recommended For You</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Recommended For You
+              </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Handpicked premium t-shirts designed for style and comfort
               </p>
@@ -146,7 +154,9 @@ export default async function HomePage() {
         <section className="py-16 px-4 bg-muted/20">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Trending Now</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Trending Now
+              </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Most selling products loved by our customers
               </p>
@@ -170,7 +180,9 @@ export default async function HomePage() {
             </div>
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
-                <h3 className="text-2xl font-semibold mb-4">ASHMARK Flagship Store</h3>
+                <h3 className="text-2xl font-semibold mb-4">
+                  ASHMARK Flagship Store
+                </h3>
                 <address className="not-italic text-muted-foreground mb-6">
                   <p>123 Fashion Street</p>
                   <p>Mumbai, Maharashtra 400001</p>
@@ -204,7 +216,9 @@ export default async function HomePage() {
         <section className="py-16 px-4 bg-muted/20">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Customers Say</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                What Our Customers Say
+              </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Real reviews from satisfied customers
               </p>
@@ -214,19 +228,22 @@ export default async function HomePage() {
                 {
                   name: "Rahul Sharma",
                   rating: 5,
-                  review: "Amazing quality t-shirts! The fabric is so comfortable and the designs are unique. Highly recommended!",
+                  review:
+                    "Amazing quality t-shirts! The fabric is so comfortable and the designs are unique. Highly recommended!",
                   verified: true,
                 },
                 {
                   name: "Priya Patel",
                   rating: 5,
-                  review: "Love shopping at ASHMARK. Fast delivery and excellent customer service. Will definitely order again!",
+                  review:
+                    "Love shopping at ASHMARK. Fast delivery and excellent customer service. Will definitely order again!",
                   verified: true,
                 },
                 {
                   name: "Amit Kumar",
                   rating: 5,
-                  review: "Best t-shirt collection I've seen. The fit is perfect and colors remain vibrant even after multiple washes.",
+                  review:
+                    "Best t-shirt collection I've seen. The fit is perfect and colors remain vibrant even after multiple washes.",
                   verified: true,
                 },
               ].map((testimonial, index) => (
@@ -234,9 +251,14 @@ export default async function HomePage() {
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <div className="flex">
-                        {Array.from({ length: testimonial.rating }).map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        ))}
+                        {Array.from({ length: testimonial.rating }).map(
+                          (_, i) => (
+                            <Star
+                              key={i}
+                              className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                            />
+                          )
+                        )}
                       </div>
                       {testimonial.verified && (
                         <Badge variant="secondary" className="text-xs">
@@ -244,10 +266,14 @@ export default async function HomePage() {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-lg">{testimonial.name}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {testimonial.name}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">{testimonial.review}</p>
+                    <p className="text-muted-foreground">
+                      {testimonial.review}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
