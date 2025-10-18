@@ -9,15 +9,25 @@ import { prisma } from "@/lib/db"
 
 export default async function ProductPage({
   params,
-}: { params: { slug: string } }) {
-  const { slug } = params
-
+}: {
+  params: Promise<{ slugs: string }>
+}) {
   const product = await prisma.product.findUnique({
-    where: { slug },
-    include: { category: true },
+    where: { slug: (await params).slugs },
+    include: {
+      category: true,
+    },
   })
 
-  if (!product) notFound()
+  if (!product) {
+    notFound()
+  }
+
+  const serializedProduct = {
+    ...product,
+    price: Number(product.price),
+    comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+  }
 
   return (
     <>
@@ -25,30 +35,19 @@ export default async function ProductPage({
       <main className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-2 gap-12">
+            {/* Product Images */}
             <ProductImages images={product.images} name={product.name} />
-            <ProductInfo
-              product={{
-                ...product,
-                price: Number(product.price),
-                comparePrice: product.comparePrice
-                  ? Number(product.comparePrice)
-                  : null,
-              }}
-            />
+            
+            {/* Product Info */}
+            <ProductInfo product={{ ...product, price: Number(product.price), comparePrice: product.comparePrice ? Number(product.comparePrice) : null }} />
           </div>
-
+          
+          {/* Product Details Tabs */}
           <div className="mt-16">
-            <ProductTabs
-              product={{
-                ...product,
-                price: Number(product.price),
-                comparePrice: product.comparePrice
-                  ? Number(product.comparePrice)
-                  : null,
-              }}
-            />
+            <ProductTabs product={serializedProduct as any} />
           </div>
-
+          
+          {/* Related Products */}
           <div className="mt-16">
             <RelatedProducts
               categoryId={product.categoryId}
