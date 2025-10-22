@@ -10,6 +10,7 @@ import { ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useTransition } from "react"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
+import { useSession } from "next-auth/react"
 
 interface ProductCardProps {
   product: {
@@ -28,12 +29,14 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { data: session } = useSession()
   const discountPercentage = product.comparePrice
     ? Math.round(((Number(product.comparePrice) - Number(product.price)) / Number(product.comparePrice)) * 100)
     : 0
 
   const [isPending] = useTransition()
   const [adding, setAdding] = useState(false)
+  const [addingToWishlist, setAddingToWishlist] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -41,6 +44,15 @@ export function ProductCard({ product }: ProductCardProps) {
   const hasMultipleImages = images.length > 1
 
   const addToCart = async () => {
+    if (!session) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setAdding(true)
     try {
       const res = await fetch('/api/cart', {
@@ -57,6 +69,56 @@ export function ProductCard({ product }: ProductCardProps) {
       toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed to add to cart', variant: 'destructive' })
     } finally {
       setAdding(false)
+    }
+  }
+
+  const addToWishlist = async () => {
+    if (!session) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to wishlist",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToWishlist(true);
+    try {
+      const response = await fetch("/api/wishlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.id,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Added to Wishlist",
+          description: "Product has been added to your wishlist",
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 400 && errorData.error === 'Item already in wishlist') {
+          toast({
+            title: "Already in Wishlist",
+            description: "This product is already in your wishlist",
+            variant: "destructive",
+          });
+        } else {
+          throw new Error("Failed to add to wishlist");
+        }
+      }
+    } catch (e) {
+      toast({
+        title: "Error",
+        description: e instanceof Error ? e.message : "Failed to add product to wishlist",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToWishlist(false);
     }
   }
 
@@ -84,7 +146,7 @@ export function ProductCard({ product }: ProductCardProps) {
             src={images[currentImageIndex]}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-contain transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
         
@@ -146,9 +208,15 @@ export function ProductCard({ product }: ProductCardProps) {
         <Button
           variant="ghost"
           size="sm"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            addToWishlist()
+          }}
+          disabled={addingToWishlist}
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background"
         >
-          <Heart className="h-4 w-4" />
+          <Heart className={cn("h-4 w-4", addingToWishlist && "animate-pulse")} />
         </Button>
       </div>
 
@@ -172,7 +240,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full bg-crimson-600 hover:bg-crimson-700" onClick={addToCart} disabled={adding || isPending}>
+        <Button className="w-full bg-crimson-600 hover:bg-crimson-700" onClick={addToCart} disabled={adding || isPending || addingToWishlist}>
           <ShoppingCart className="mr-2 h-4 w-4" />
           {adding ? 'Adding...' : 'Add to Cart'}
         </Button>

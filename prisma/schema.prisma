@@ -113,6 +113,12 @@ model Product {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
+  @@index([categoryId])
+  @@index([price])
+  @@index([featured])
+  @@index([trending])
+  @@index([createdAt])
+  @@index([name])
   @@map("products")
 }
 

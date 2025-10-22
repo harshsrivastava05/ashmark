@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/footer"
 import { ProductGrid } from "@/components/product/product-grid"
 import { ProductFilters } from "@/components/product/product-filters"
 import { Skeleton } from "@/components/ui/skeleton"
+import { MobileFilters } from "@/components/product/mobile-filters"
 
 interface SearchParamsShape {
   search?: string
@@ -32,9 +33,14 @@ export default async function ProductsPage(
       <Navbar />
       <main className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden mb-6">
+            <MobileFilters />
+          </div>
+          
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Filters Sidebar */}
-            <div className="lg:w-1/4">
+            {/* Desktop Filters Sidebar */}
+            <div className="hidden lg:block lg:w-1/4">
               <ProductFilters />
             </div>
             

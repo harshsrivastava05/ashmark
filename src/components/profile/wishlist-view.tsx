@@ -45,7 +45,8 @@ export function WishlistView({ userId }: WishlistViewProps) {
       const response = await fetch('/api/wishlist')
       if (response.ok) {
         const data = await response.json()
-        setWishlistItems(data.wishlistItems || [])
+        // API returns wishlist items directly as an array, not wrapped in wishlistItems
+        setWishlistItems(Array.isArray(data) ? data : [])
       } else {
         setWishlistItems([])
       }

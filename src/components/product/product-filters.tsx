@@ -25,10 +25,30 @@ export function ProductFilters() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '')
 
   useEffect(() => {
-    fetch('/api/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data.categories))
-      .catch(console.error)
+    const fetchCategories = async () => {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+        
+        const res = await fetch('/api/categories', { 
+          signal: controller.signal 
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (res.ok) {
+          const data = await res.json()
+          setCategories(data.categories || [])
+        } else {
+          setCategories([])
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        setCategories([])
+      }
+    }
+    
+    fetchCategories()
   }, [])
 
   const updateFilters = (key: string, value: string) => {

@@ -65,29 +65,28 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Search Bar */}
-        <div className="hidden md:flex items-center">
-          <form onSubmit={handleSearch} className="relative">
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="w-64"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button
-              type="submit"
-              size="sm"
-              variant="ghost"
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-          </form>
-        </div>
-
         {/* Right Side Actions */}
         <div className="flex items-center space-x-2">
+          {/* Search Bar */}
+          <div className="hidden md:flex items-center">
+            <form onSubmit={handleSearch} className="relative">
+              <Input
+                type="search"
+                placeholder="Search products..."
+                className="w-64"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button
+                type="submit"
+                size="sm"
+                variant="ghost"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
           {/* Cart */}
           <Button variant="ghost" size="sm" asChild className="relative">
             <Link href="/cart">
