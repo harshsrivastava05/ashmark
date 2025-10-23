@@ -151,10 +151,12 @@ export function Navbar() {
               <div className="flex flex-col h-full">
                 {/* Header */}
                 <div className="flex items-center gap-2 mb-6">
-                  <img
+                  <Image
                     src="/logo.png"
                     alt="Ashmark Logo"
-                    className="h-6 w-6 object-contain"
+                    width={24}  // h-6 w-6 = 24px
+                    height={24}
+                    className="object-contain"
                   />
                   <div className="text-lg font-bold text-crimson-600">ASHMARK</div>
                 </div>
