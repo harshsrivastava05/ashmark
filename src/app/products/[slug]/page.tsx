@@ -5,6 +5,7 @@ import { ProductImages } from "@/components/product/product-images"
 import { ProductInfo } from "@/components/product/product-info"
 import { ProductTabs } from "@/components/product/product-tabs"
 import { RelatedProducts } from "@/components/product/related-products"
+import { ReviewSection } from "@/components/product/review-section"
 import { prisma } from "@/lib/db"
 
 export default async function ProductPage({
@@ -45,6 +46,11 @@ export default async function ProductPage({
           {/* Product Details Tabs */}
           <div className="mt-16">
             <ProductTabs product={serializedProduct as any} />
+          </div>
+          
+          {/* Reviews Section */}
+          <div className="mt-16">
+            <ReviewSection productId={product.id} />
           </div>
           
           {/* Related Products */}

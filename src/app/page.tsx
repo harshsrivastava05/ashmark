@@ -90,17 +90,19 @@ export default async function HomePage() {
       <Navbar />
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <section className="relative min-h-screen flex items-center justify-start overflow-hidden">
           <video autoPlay muted loop className="absolute inset-0 hero-video">
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/50" />
-            <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">ASHMARK</h1>
-            <p className="text-xl md:text-2xl mb-8 text-gray-200">
+          <div className="relative z-10 text-left text-white max-w-4xl px-8 md:px-24 flex flex-col items-start justify-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-[62px] relative -top-[12px]">
+              ASHMARK
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-gray-200 relative top-[12px]">
               Premium T-Shirts. Unique Designs. Unmatched Quality.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 className="bg-crimson-600 hover:bg-crimson-700"

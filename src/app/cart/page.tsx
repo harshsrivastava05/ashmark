@@ -12,6 +12,8 @@ import { formatPrice } from "@/lib/utils"
 import { CartItem } from "@/components/cart/cart-item"
 import { EmptyCart } from "@/components/cart/empty-cart"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useCart } from "@/contexts/cart-context"
+import { toast } from "@/components/ui/use-toast"
 
 interface CartItemType {
   id: string
@@ -30,69 +32,19 @@ interface CartItemType {
 export default function CartPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [cartItems, setCartItems] = useState<CartItemType[]>([])
-  const [loading, setLoading] = useState(true)
+  const { cartItems, updateQuantity, removeItem, loading } = useCart()
 
-  useEffect(() => {
+  const handleCheckout = () => {
     if (!session) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to proceed with checkout",
+        variant: "destructive",
+      })
       router.push('/login')
       return
     }
-
-    fetchCart()
-  }, [session, router])
-
-  const fetchCart = async () => {
-    try {
-      const response = await fetch('/api/cart')
-      if (response.ok) {
-        const data = await response.json()
-        setCartItems(data.cartItems)
-      }
-    } catch (error) {
-      console.error('Error fetching cart:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      removeItem(itemId)
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/cart/${itemId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity: newQuantity }),
-      })
-
-      if (response.ok) {
-        setCartItems(items =>
-          items.map(item =>
-            item.id === itemId ? { ...item, quantity: newQuantity } : item
-          )
-        )
-      }
-    } catch (error) {
-      console.error('Error updating quantity:', error)
-    }
-  }
-
-  const removeItem = async (itemId: string) => {
-    try {
-      const response = await fetch(`/api/cart/${itemId}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        setCartItems(items => items.filter(item => item.id !== itemId))
-      }
-    } catch (error) {
-      console.error('Error removing item:', error)
-    }
+    router.push('/checkout')
   }
 
   const subtotal = cartItems.reduce(
@@ -178,9 +130,9 @@ export default function CartPage() {
                   </div>
                   <Button
                     className="w-full bg-crimson-600 hover:bg-crimson-700"
-                    onClick={() => router.push('/checkout')}
+                    onClick={handleCheckout}
                   >
-                    Proceed to Checkout
+                    {session ? 'Proceed to Checkout' : 'Login to Checkout'}
                   </Button>
                   {subtotal < 1000 && (
                     <p className="text-sm text-muted-foreground text-center">

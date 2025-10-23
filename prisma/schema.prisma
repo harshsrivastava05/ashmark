@@ -64,10 +64,30 @@ model User {
   cart          CartItem[]
   addresses     Address[]
   wishlistItems WishlistItem[]
+  reviews       Review[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  rating    Int      // 1-5 stars
+  title     String?
+  comment   String?  @db.Text
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, productId]) // One review per user per product
+  @@index([productId])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("reviews")
 }
 
 model VerificationToken {
@@ -110,6 +130,7 @@ model Product {
   cartItems     CartItem[]
   orderItems    OrderItem[]
   wishlistItems WishlistItem[]
+  reviews       Review[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 

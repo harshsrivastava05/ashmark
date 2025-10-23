@@ -8,16 +8,18 @@ import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-  // removed unused Separator import
 import { AddressForm } from "@/components/checkout/address-form"
 import { OrderSummary } from "@/components/checkout/order-summary"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "@/components/ui/use-toast"
+import { useCart } from "@/contexts/cart-context"
 
 export default function CheckoutPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { error, isLoading, Razorpay } = useRazorpay()
+  const { cartItems } = useCart()
+  
   type Address = {
     id: string
     name: string
@@ -50,23 +52,14 @@ export default function CheckoutPage() {
     }
   }, [])
 
-  const fetchOrderSummary = useCallback(async () => {
-    try {
-      const response = await fetch('/api/cart')
-      if (response.ok) {
-        const data = await response.json()
-        type CartItem = { product: { price: number | string }, quantity: number }
-        const subtotal = (data.cartItems as CartItem[]).reduce(
-          (sum: number, item: CartItem) => sum + Number(item.product.price) * item.quantity,
-          0
-        )
-        const shipping = subtotal > 1000 ? 0 : 100
-        setOrderTotal(subtotal + shipping)
-      }
-    } catch (error) {
-      console.error('Error fetching order summary:', error)
-    }
-  }, [])
+  const calculateOrderTotal = useCallback(() => {
+    const subtotal = cartItems.reduce(
+      (sum, item) => sum + Number(item.product.price) * item.quantity,
+      0
+    )
+    const shipping = subtotal > 1000 ? 0 : 100
+    setOrderTotal(subtotal + shipping)
+  }, [cartItems])
 
   useEffect(() => {
     if (!session) {
@@ -74,9 +67,14 @@ export default function CheckoutPage() {
       return
     }
 
+    if (cartItems.length === 0) {
+      router.push('/cart')
+      return
+    }
+
     fetchAddresses()
-    fetchOrderSummary()
-  }, [session, router, fetchAddresses, fetchOrderSummary])
+    calculateOrderTotal()
+  }, [session, router, fetchAddresses, calculateOrderTotal, cartItems])
 
   const handlePayment = async () => {
     if (!selectedAddress) {

@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface ProductImagesProps {
-  images: string[]
-  name: string
+  images: string[];
+  name: string;
 }
 
 export function ProductImages({ images, name }: ProductImagesProps) {
-  const [selectedImage, setSelectedImage] = useState(0)
+  const [selectedImage, setSelectedImage] = useState(0);
 
   if (!images.length) {
     return (
       <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
         <span className="text-muted-foreground">No image available</span>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="aspect-square overflow-hidden rounded-lg border bg-background">
+      <div className="aspect-square overflow-hidden rounded-lg border bg-background flex items-center justify-center p-4">
         <Image
           src={images[selectedImage]}
           alt={name}
           width={600}
           height={600}
-          className="h-full w-full object-cover transition-transform hover:scale-105"
+          className="h-[85%] w-[85%] object-contain transition-transform duration-300 hover:scale-105"
         />
       </div>
 
@@ -59,5 +59,5 @@ export function ProductImages({ images, name }: ProductImagesProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

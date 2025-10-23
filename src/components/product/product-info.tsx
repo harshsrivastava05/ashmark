@@ -23,6 +23,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { useCart } from "@/contexts/cart-context";
 
 interface ProductInfoProps {
   product: {
@@ -44,6 +45,7 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const { data: session } = useSession();
+  const { addToCart: addToCartContext } = useCart();
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
@@ -58,15 +60,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     : 0;
 
   const addToCart = async () => {
-    if (!session) {
-      toast({
-        title: "Login Required",
-        description: "Please login to add items to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Validate required selections
     if (product.sizes.length > 0 && !selectedSize) {
       toast({
         title: "Size Required",
@@ -88,31 +82,21 @@ export function ProductInfo({ product }: ProductInfoProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity,
-          size: selectedSize || null,
-          color: selectedColor || null,
-        }),
+      await addToCartContext(
+        product.id,
+        quantity,
+        selectedSize || undefined,
+        selectedColor || undefined
+      );
+      
+      toast({
+        title: "Added to Cart",
+        description: "Product has been added to your cart",
       });
-
-      if (response.ok) {
-        toast({
-          title: "Added to Cart",
-          description: "Product has been added to your cart",
-        });
-      } else {
-        throw new Error("Failed to add to cart");
-      }
-    } catch {
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add product to cart",
+        description: error instanceof Error ? error.message : "Failed to add product to cart",
         variant: "destructive",
       });
     } finally {

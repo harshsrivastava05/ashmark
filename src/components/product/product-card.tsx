@@ -11,6 +11,7 @@ import { useState, useTransition } from "react"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
+import { useCart } from "@/contexts/cart-context"
 
 interface ProductCardProps {
   product: {
@@ -30,6 +31,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { data: session } = useSession()
+  const { addToCart: addToCartContext } = useCart()
   const discountPercentage = product.comparePrice
     ? Math.round(((Number(product.comparePrice) - Number(product.price)) / Number(product.comparePrice)) * 100)
     : 0
@@ -44,26 +46,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const hasMultipleImages = images.length > 1
 
   const addToCart = async () => {
-    if (!session) {
-      toast({
-        title: "Login Required",
-        description: "Please login to add items to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setAdding(true)
     try {
-      const res = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id, quantity: 1 })
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to add to cart')
-      }
+      await addToCartContext(product.id, 1)
       toast({ title: 'Added to Cart', description: `${product.name} added to your cart.` })
     } catch (e) {
       toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed to add to cart', variant: 'destructive' })
