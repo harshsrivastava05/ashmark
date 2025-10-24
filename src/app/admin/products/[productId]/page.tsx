@@ -11,6 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import Image from "next/image"
+import { BookOpen, Edit, Image as ImageIcon } from "lucide-react"
 
 export default async function AdminProductDetailsPage({
   params,
@@ -119,12 +123,18 @@ export default async function AdminProductDetailsPage({
           <div className="grid gap-6 lg:grid-cols-4">
             <div className="lg:col-span-3">
               <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-background border-0 shadow-md">
+                <TabsList className="grid w-full grid-cols-4 bg-background border-0 shadow-md">
                   <TabsTrigger 
                     value="details" 
                     className="data-[state=active]:bg-crimson-600 data-[state=active]:text-white"
                   >
                     Details
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="story" 
+                    className="data-[state=active]:bg-crimson-600 data-[state=active]:text-white"
+                  >
+                    Story
                   </TabsTrigger>
                   <TabsTrigger 
                     value="analytics" 
@@ -142,6 +152,10 @@ export default async function AdminProductDetailsPage({
                 
                 <TabsContent value="details" className="mt-6">
                   <AdminProductDetails product={serializedProduct as any} />
+                </TabsContent>
+                
+                <TabsContent value="story" className="mt-6">
+                  <AdminProductStory product={serializedProduct as any} />
                 </TabsContent>
                 
                 <TabsContent value="analytics" className="mt-6">
@@ -215,6 +229,78 @@ function AdminProductOrders({ product }: { product: any }) {
             ))
           )}
         </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Product Story Component
+function AdminProductStory({ product }: { product: any }) {
+  const hasStory = product.storyTitle && product.storyContent
+
+  return (
+    <Card className="border-0 shadow-md">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BookOpen className="w-5 h-5" />
+          Product Story
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {hasStory ? (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">{product.storyTitle}</h3>
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {product.storyContent}
+              </p>
+            </div>
+            
+            {product.storyImages && product.storyImages.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-3 flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  Story Images ({product.storyImages.length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {product.storyImages.map((image: string, index: number) => (
+                    <div key={index} className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+                      <Image
+                        src={image}
+                        alt={`Story image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              <Button asChild>
+                <Link href={`/admin/products/${product.id}/story`}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Story
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Story Added</h3>
+            <p className="text-muted-foreground mb-4">
+              This product doesn't have a story yet. Add one to showcase the inspiration and craftsmanship behind this product.
+            </p>
+            <Button asChild>
+              <Link href={`/admin/products/${product.id}/story`}>
+                <Edit className="w-4 h-4 mr-2" />
+                Add Story
+              </Link>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

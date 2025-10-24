@@ -32,14 +32,66 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasMigratedCart, setHasMigratedCart] = useState(false)
 
   // Load cart items on mount and when session changes
   useEffect(() => {
     loadCartItems()
-  }, [session])
+  }, [session, status])
+
+  // Migrate guest cart to database when user logs in
+  useEffect(() => {
+    if (session?.user && status === 'authenticated' && !hasMigratedCart) {
+      migrateGuestCartToDatabase()
+    }
+  }, [session, status, hasMigratedCart])
+
+  const migrateGuestCartToDatabase = async () => {
+    try {
+      const savedCart = localStorage.getItem('guest-cart')
+      if (!savedCart) {
+        setHasMigratedCart(true)
+        return
+      }
+
+      const guestCartItems: CartItem[] = JSON.parse(savedCart)
+      if (guestCartItems.length === 0) {
+        setHasMigratedCart(true)
+        return
+      }
+
+      // Add each guest cart item to the database
+      for (const item of guestCartItems) {
+        try {
+          await fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId: item.productId,
+              quantity: item.quantity,
+              size: item.size,
+              color: item.color,
+            }),
+          })
+        } catch (error) {
+          console.error('Error migrating cart item:', error)
+        }
+      }
+
+      // Clear guest cart from localStorage
+      localStorage.removeItem('guest-cart')
+      setHasMigratedCart(true)
+
+      // Reload cart from database
+      await loadCartItems()
+    } catch (error) {
+      console.error('Error migrating guest cart:', error)
+      setHasMigratedCart(true)
+    }
+  }
 
   const loadCartItems = async () => {
     setLoading(true)
@@ -51,16 +103,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const data = await response.json()
           setCartItems(data.cartItems || [])
         }
-      } else {
+      } else if (status === 'unauthenticated') {
         // Load from localStorage for guest users
         const savedCart = localStorage.getItem('guest-cart')
         if (savedCart) {
           const parsedCart = JSON.parse(savedCart)
           setCartItems(parsedCart)
+        } else {
+          setCartItems([])
         }
       }
     } catch (error) {
       console.error('Error loading cart:', error)
+      setCartItems([])
     } finally {
       setLoading(false)
     }
@@ -124,16 +179,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
               item.productId === productId && item.size === size && item.color === color
             )
             
+            let updated: CartItem[]
             if (existingIndex >= 0) {
-              const updated = [...prev]
+              updated = [...prev]
               updated[existingIndex] = { 
                 ...updated[existingIndex], 
                 quantity: updated[existingIndex].quantity + quantity 
               }
-              return updated
             } else {
-              return [...prev, newItem]
+              updated = [...prev, newItem]
             }
+            
+            saveGuestCart(updated)
+            return updated
           })
         }
       }
@@ -210,13 +268,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('guest-cart')
     }
   }
-
-  // Save guest cart to localStorage whenever it changes
-  useEffect(() => {
-    if (!session?.user && cartItems.length > 0) {
-      saveGuestCart(cartItems)
-    }
-  }, [cartItems, session])
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 

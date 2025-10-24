@@ -16,6 +16,10 @@ const createProductSchema = z.object({
   featured: z.boolean().default(false),
   trending: z.boolean().default(false),
   slug: z.string().min(1, "Slug is required"),
+  hasStory: z.boolean().optional(),
+  storyTitle: z.string().optional(),
+  storyContent: z.string().optional(),
+  storyImages: z.array(z.string()).optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -161,6 +165,9 @@ export async function POST(request: NextRequest) {
         featured: validatedData.featured,
         trending: validatedData.trending,
         slug: validatedData.slug,
+        storyTitle: validatedData.hasStory ? validatedData.storyTitle : null,
+        storyContent: validatedData.hasStory ? validatedData.storyContent : null,
+        storyImages: validatedData.hasStory ? (validatedData.storyImages || []) : [],
       },
       include: {
         category: true,

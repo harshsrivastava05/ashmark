@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, ShoppingCart, User, Search, Heart } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/cart-context";
 import {
@@ -23,8 +23,6 @@ export function Navbar() {
   const { data: session } = useSession();
   const { cartCount } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Cart count is now managed by the cart context
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -52,7 +50,6 @@ export function Navbar() {
             height={32}
             className="object-contain"
           />
-
           <div className="text-2xl font-bold text-crimson-600">ASHMARK</div>
         </Link>
 
@@ -69,8 +66,8 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* RIGHT SIDE: search bar + icons (Search → Wishlist → Cart → User) */}
-        <div className="flex items-center space-x-3">
+        {/* RIGHT SIDE: search bar + icons */}
+        <div className="flex items-center gap-2 md:gap-3">
           {/* Desktop search bar (visible on md+) */}
           <div className="hidden md:flex items-center">
             <form onSubmit={handleSearch} className="flex items-center">
@@ -85,14 +82,14 @@ export function Navbar() {
           </div>
 
           {/* Wishlist */}
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="ghost" size="sm" asChild className="h-9 w-9 p-0">
             <Link href="/wishlist">
               <Heart className="h-5 w-5" />
             </Link>
           </Button>
 
           {/* Cart */}
-          <Button variant="ghost" size="sm" asChild className="relative">
+          <Button variant="ghost" size="sm" asChild className="relative h-9 w-9 p-0">
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
@@ -107,7 +104,7 @@ export function Navbar() {
           {session?.user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
                   <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -132,16 +129,16 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button onClick={() => signIn()} variant="ghost" size="sm">
-              <User className="h-5 w-5" />
-              <span className="ml-1">Login</span>
+            <Button onClick={() => signIn()} variant="ghost" size="sm" className="h-9">
+              <User className="h-5 w-5 mr-1" />
+              <span className="hidden sm:inline">Login</span>
             </Button>
           )}
 
           {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="md:hidden">
+              <Button variant="ghost" size="sm" className="md:hidden h-9 w-9 p-0">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -152,7 +149,7 @@ export function Navbar() {
                   <Image
                     src="/logo.png"
                     alt="Ashmark Logo"
-                    width={24}  // h-6 w-6 = 24px
+                    width={24}
                     height={24}
                     className="object-contain"
                   />

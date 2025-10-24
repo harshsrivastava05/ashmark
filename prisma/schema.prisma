@@ -125,6 +125,9 @@ model Product {
   stock         Int            @default(0)
   featured      Boolean        @default(false)
   trending      Boolean        @default(false)
+  storyTitle    String?        @map("story_title")
+  storyContent  String?        @db.Text @map("story_content")
+  storyImages   String[]       @map("story_images")
   categoryId    String         @map("category_id")
   category      Category       @relation(fields: [categoryId], references: [id])
   cartItems     CartItem[]

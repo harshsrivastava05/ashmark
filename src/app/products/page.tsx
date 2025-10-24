@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { ProductGrid } from "@/components/product/product-grid"
 import { ProductFilters } from "@/components/product/product-filters"
+import { ProductStoriesSection } from "@/components/product/product-stories-section"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MobileFilters } from "@/components/product/mobile-filters"
 
@@ -32,6 +33,11 @@ export default async function ProductsPage(
     <>
       <Navbar />
       <main className="min-h-screen">
+        {/* Product Stories Section */}
+        <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse" />}>
+          <ProductStoriesSection />
+        </Suspense>
+        
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Mobile Filter Toggle */}
           <div className="lg:hidden mb-6">
