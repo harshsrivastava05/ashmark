@@ -1,53 +1,30 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { isNewUser } from "@/lib/promo-codes"
 
 export function PromoMarquee() {
-  const { data: session, status } = useSession()
-  const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
   useEffect(() => {
-    // Check if marquee was dismissed
-    const dismissed = localStorage.getItem('promo-marquee-dismissed')
+    // Check if marquee was dismissed in this session only
+    // Using sessionStorage instead of localStorage so it resets on each browser session
+    const dismissed = sessionStorage.getItem('promo-marquee-dismissed')
     if (dismissed === 'true') {
       setIsDismissed(true)
-      return
+    } else {
+      setIsDismissed(false)
     }
-
-    // Check if user is new (signed up within last 15 days)
-    if (status === 'authenticated' && session?.user) {
-      // We need to fetch user data to check createdAt
-      fetch('/api/profile')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.user?.createdAt) {
-            const userIsNew = isNewUser(data.user.createdAt)
-            setIsVisible(userIsNew)
-          } else {
-            setIsVisible(false)
-          }
-        })
-        .catch(() => {
-          // If error, don't show
-          setIsVisible(false)
-        })
-    } else if (status === 'unauthenticated') {
-      // Show for visitors (not logged in)
-      setIsVisible(true)
-    }
-  }, [session, status])
+  }, [])
 
   const handleDismiss = () => {
     setIsDismissed(true)
-    localStorage.setItem('promo-marquee-dismissed', 'true')
+    // Use sessionStorage so it only persists for the current browser session
+    sessionStorage.setItem('promo-marquee-dismissed', 'true')
   }
 
-  if (isDismissed || !isVisible) {
+  if (isDismissed) {
     return null
   }
 
