@@ -65,6 +65,7 @@ model User {
   addresses     Address[]
   wishlistItems WishlistItem[]
   reviews       Review[]
+  promoCodeUsages PromoCodeUsage[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
@@ -170,6 +171,8 @@ model Order {
   subtotal          Decimal       @db.Decimal(10, 2)
   tax               Decimal       @db.Decimal(10, 2)
   shipping          Decimal       @db.Decimal(10, 2)
+  discount          Decimal?      @db.Decimal(10, 2)
+  promoCode         String?
   paymentStatus     PaymentStatus @default(PENDING) @map("payment_status")
   paymentMethod     String?       @map("payment_method")
   razorpayOrderId   String?       @map("razorpay_order_id")
@@ -179,6 +182,7 @@ model Order {
   shippingAddressId String?
   shippingAddress   Address?      @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
   addressId         String        @map("address_id")
+  promoCodeUsage    PromoCodeUsage?
   createdAt         DateTime      @default(now()) @map("created_at")
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
@@ -275,4 +279,19 @@ enum AddressType {
   home
   work
   other
+}
+
+model PromoCodeUsage {
+  id        String   @id @default(cuid())
+  code      String
+  userId    String   @map("user_id")
+  orderId   String?  @unique @map("order_id")
+  usedAt    DateTime @default(now()) @map("used_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, code])
+  @@index([userId])
+  @@index([code])
+  @@map("promo_code_usages")
 }

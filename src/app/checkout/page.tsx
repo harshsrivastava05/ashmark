@@ -13,6 +13,7 @@ import { OrderSummary } from "@/components/checkout/order-summary"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "@/components/ui/use-toast"
 import { useCart } from "@/contexts/cart-context"
+import { Input } from "@/components/ui/input"
 
 export default function CheckoutPage() {
   const { data: session } = useSession()
@@ -35,6 +36,10 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
   const [orderTotal, setOrderTotal] = useState(0)
   const [processing, setProcessing] = useState(false)
+  const [promoCode, setPromoCode] = useState("")
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null)
+  const [discount, setDiscount] = useState(0)
+  const [applyingPromo, setApplyingPromo] = useState(false)
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -58,8 +63,67 @@ export default function CheckoutPage() {
       0
     )
     const shipping = subtotal > 1000 ? 0 : 100
-    setOrderTotal(subtotal + shipping)
-  }, [cartItems])
+    setOrderTotal(subtotal + shipping - discount)
+  }, [cartItems, discount])
+
+  const handleApplyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      toast({
+        title: "Promo Code Required",
+        description: "Please enter a promo code",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setApplyingPromo(true)
+    const subtotal = cartItems.reduce(
+      (sum, item) => sum + Number(item.product.price) * item.quantity,
+      0
+    )
+
+    try {
+      const response = await fetch('/api/promo-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promoCode: promoCode.trim(), subtotal }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Invalid Promo Code",
+          description: data.error || "This promo code cannot be applied",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setAppliedPromoCode(data.code)
+      setDiscount(data.discount || 0)
+      calculateOrderTotal()
+      toast({
+        title: "Promo Code Applied",
+        description: `Discount of ${formatPrice(data.discount || 0)} applied!`,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to apply promo code. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setApplyingPromo(false)
+    }
+  }
+
+  const handleRemovePromoCode = () => {
+    setAppliedPromoCode(null)
+    setDiscount(0)
+    setPromoCode("")
+    calculateOrderTotal()
+  }
 
   useEffect(() => {
     if (!session) {
@@ -96,6 +160,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           amount: orderTotal,
           addressId: selectedAddress.id,
+          promoCode: appliedPromoCode || undefined,
         }),
       })
 
@@ -196,7 +261,52 @@ export default function CheckoutPage() {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <OrderSummary />
+                  {/* Promo Code Section */}
+                  <div className="mb-4 space-y-2">
+                    {appliedPromoCode ? (
+                      <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                            {appliedPromoCode}
+                          </span>
+                          <span className="text-xs text-green-600 dark:text-green-400">
+                            -{formatPrice(discount)}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={handleRemovePromoCode}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter promo code"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleApplyPromoCode()
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={handleApplyPromoCode}
+                          disabled={applyingPromo || !promoCode.trim()}
+                          variant="outline"
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <OrderSummary promoCode={appliedPromoCode} discount={discount} />
                   <div className="mt-6 pt-4 border-t">
                     <div className="flex justify-between font-semibold text-lg mb-4">
                       <span>Total</span>

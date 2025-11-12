@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/layout/navbar"
@@ -14,6 +14,7 @@ import { EmptyCart } from "@/components/cart/empty-cart"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCart } from "@/contexts/cart-context"
 import { toast } from "@/components/ui/use-toast"
+import { Input } from "@/components/ui/input"
 
 interface CartItemType {
   id: string
@@ -33,6 +34,10 @@ export default function CartPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { cartItems, updateQuantity, removeItem, loading } = useCart()
+  const [promoCode, setPromoCode] = useState("")
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null)
+  const [discount, setDiscount] = useState(0)
+  const [applyingPromo, setApplyingPromo] = useState(false)
 
   const handleCheckout = () => {
     if (!session) {
@@ -47,12 +52,78 @@ export default function CartPage() {
     router.push('/checkout')
   }
 
+  const handleApplyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      toast({
+        title: "Promo Code Required",
+        description: "Please enter a promo code",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!session) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to apply promo code",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setApplyingPromo(true)
+    const subtotal = cartItems.reduce(
+      (sum, item) => sum + Number(item.product.price) * item.quantity,
+      0
+    )
+
+    try {
+      const response = await fetch('/api/promo-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promoCode: promoCode.trim(), subtotal }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Invalid Promo Code",
+          description: data.error || "This promo code cannot be applied",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setAppliedPromoCode(data.code)
+      setDiscount(data.discount || 0)
+      toast({
+        title: "Promo Code Applied",
+        description: `Discount of ${formatPrice(data.discount || 0)} applied!`,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to apply promo code. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setApplyingPromo(false)
+    }
+  }
+
+  const handleRemovePromoCode = () => {
+    setAppliedPromoCode(null)
+    setDiscount(0)
+    setPromoCode("")
+  }
+
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity,
     0
   )
   const shipping = subtotal > 1000 ? 0 : 100
-  const total = subtotal + shipping
+  const total = subtotal + shipping - discount
 
   if (loading) {
     return (
@@ -109,24 +180,77 @@ export default function CartPage() {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
+                  {/* Promo Code Section */}
+                  <div className="space-y-2">
+                    {appliedPromoCode ? (
+                      <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/30 rounded-md border border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-green-900 dark:text-green-100">
+                            {appliedPromoCode}
+                          </span>
+                          <span className="text-xs font-bold text-green-700 dark:text-green-300">
+                            -{formatPrice(discount)}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-foreground hover:text-destructive"
+                          onClick={handleRemovePromoCode}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter promo code"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleApplyPromoCode()
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={handleApplyPromoCode}
+                          disabled={applyingPromo || !promoCode.trim()}
+                          variant="outline"
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
+
+                  <Separator />
+
+                  <div className="flex justify-between text-foreground">
+                    <span className="text-foreground">Subtotal</span>
+                    <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-foreground">
+                    <span className="text-foreground">Shipping</span>
                     <span>
                       {shipping === 0 ? (
-                        <span className="text-green-600">Free</span>
+                        <span className="text-green-700 dark:text-green-400 font-semibold">Free</span>
                       ) : (
-                        formatPrice(shipping)
+                        <span className="font-medium text-foreground">{formatPrice(shipping)}</span>
                       )}
                     </span>
                   </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-700 dark:text-green-400">
+                      <span className="font-medium">Discount</span>
+                      <span className="font-semibold">-{formatPrice(discount)}</span>
+                    </div>
+                  )}
                   <Separator />
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>{formatPrice(total)}</span>
+                  <div className="flex justify-between font-semibold text-lg text-foreground">
+                    <span className="text-foreground">Total</span>
+                    <span className="text-crimson-700 dark:text-crimson-400">{formatPrice(total)}</span>
                   </div>
                   <Button
                     className="w-full bg-crimson-600 hover:bg-crimson-700"

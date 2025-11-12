@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/product/product-card";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { PromoMarquee } from "@/components/layout/promo-marquee";
 
 export default async function HomePage() {
   let featuredProducts: Array<{
@@ -88,6 +89,7 @@ export default async function HomePage() {
   return (
     <>
       <Navbar />
+      <PromoMarquee />
       <main>
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-start overflow-hidden">

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db"
 
 export const config = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.AUTH_SECRET,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,

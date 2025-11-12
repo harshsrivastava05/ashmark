@@ -22,7 +22,12 @@ interface CartItem {
   }
 }
 
-export function OrderSummary() {
+interface OrderSummaryProps {
+  promoCode?: string | null
+  discount?: number
+}
+
+export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSummaryProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -50,7 +55,8 @@ export function OrderSummary() {
   )
   const shipping = subtotal > 1000 ? 0 : 100
   const tax = 0
-  const discount = subtotal > 2000 ? subtotal * 0.05 : 0
+  // Use promo discount if provided, otherwise use the old logic for backward compatibility
+  const discount = promoDiscount > 0 ? promoDiscount : (subtotal > 2000 ? subtotal * 0.05 : 0)
   const total = subtotal + shipping + tax - discount
 
   if (loading) {
@@ -100,7 +106,7 @@ export function OrderSummary() {
                 className="object-cover flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm line-clamp-2">
+                <h4 className="font-medium text-sm line-clamp-2 text-foreground">
                   {item.product.name}
                 </h4>
                 <div className="flex items-center gap-2 mt-1">
@@ -116,10 +122,10 @@ export function OrderSummary() {
                   )}
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-foreground/70">
                     Qty: {item.quantity}
                   </span>
-                  <span className="font-medium text-sm">
+                  <span className="font-semibold text-sm text-foreground">
                     {formatPrice(Number(item.product.price) * item.quantity)}
                   </span>
                 </div>
@@ -132,21 +138,21 @@ export function OrderSummary() {
 
         {/* Pricing Breakdown */}
         <div className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-            <span>{formatPrice(subtotal)}</span>
+          <div className="flex justify-between text-sm text-foreground">
+            <span className="text-foreground">Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+            <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
           </div>
           
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-sm text-foreground">
             <div className="flex items-center gap-1">
-              <Truck className="h-4 w-4" />
-              <span>Shipping</span>
+              <Truck className="h-4 w-4 text-foreground" />
+              <span className="text-foreground">Shipping</span>
             </div>
             <span>
               {shipping === 0 ? (
-                <span className="text-green-600 font-medium">FREE</span>
+                <span className="text-green-700 dark:text-green-400 font-semibold">FREE</span>
               ) : (
-                formatPrice(shipping)
+                <span className="font-medium text-foreground">{formatPrice(shipping)}</span>
               )}
             </span>
           </div>
@@ -154,30 +160,34 @@ export function OrderSummary() {
           {/* No tax applied */}
 
           {discount > 0 && (
-            <div className="flex justify-between text-sm text-green-600">
-              <span>Discount (5% off on orders above ₹2000)</span>
-              <span>-{formatPrice(discount)}</span>
+            <div className="flex justify-between text-sm text-green-700 dark:text-green-400">
+              <span className="font-medium">
+                {promoCode 
+                  ? `Discount (${promoCode})` 
+                  : "Discount (5% off on orders above ₹2000)"}
+              </span>
+              <span className="font-semibold">-{formatPrice(discount)}</span>
             </div>
           )}
 
           <Separator />
 
-          <div className="flex justify-between font-semibold text-lg">
-            <span>Total</span>
-            <span className="text-crimson-600">{formatPrice(total)}</span>
+          <div className="flex justify-between font-semibold text-lg text-foreground">
+            <span className="text-foreground">Total</span>
+            <span className="text-crimson-700 dark:text-crimson-400">{formatPrice(total)}</span>
           </div>
         </div>
 
         {/* Shipping Info */}
         {subtotal < 1000 && (
-          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400">
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500">
             <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 text-yellow-600 mt-0.5" />
+              <Info className="h-4 w-4 text-yellow-700 dark:text-yellow-300 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                <p className="font-semibold text-yellow-900 dark:text-yellow-100">
                   Almost there!
                 </p>
-                <p className="text-yellow-700 dark:text-yellow-300">
+                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
                   Add {formatPrice(1000 - subtotal)} more to get free shipping
                 </p>
               </div>
@@ -186,14 +196,14 @@ export function OrderSummary() {
         )}
 
         {shipping === 0 && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400">
+          <div className="p-3 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500">
             <div className="flex items-start gap-2">
-              <Truck className="h-4 w-4 text-green-600 mt-0.5" />
+              <Truck className="h-4 w-4 text-green-700 dark:text-green-300 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-green-800 dark:text-green-200">
+                <p className="font-semibold text-green-900 dark:text-green-100">
                   Free shipping applied!
                 </p>
-                <p className="text-green-700 dark:text-green-300">
+                <p className="text-green-800 dark:text-green-200 font-medium">
                   Your order qualifies for free delivery
                 </p>
               </div>
@@ -202,14 +212,14 @@ export function OrderSummary() {
         )}
 
         {discount > 0 && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400">
+          <div className="p-3 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500">
             <div className="flex items-start gap-2">
-              <Receipt className="h-4 w-4 text-green-600 mt-0.5" />
+              <Receipt className="h-4 w-4 text-green-700 dark:text-green-300 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-green-800 dark:text-green-200">
+                <p className="font-semibold text-green-900 dark:text-green-100">
                   Discount applied!
                 </p>
-                <p className="text-green-700 dark:text-green-300">
+                <p className="text-green-800 dark:text-green-200 font-medium">
                   You saved {formatPrice(discount)} on this order
                 </p>
               </div>

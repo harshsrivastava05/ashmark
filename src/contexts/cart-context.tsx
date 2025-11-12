@@ -27,6 +27,10 @@ interface CartContextType {
   removeItem: (itemId: string) => Promise<void>
   clearCart: () => void
   loading: boolean
+  promoCode: string | null
+  promoDiscount: number
+  setPromoCode: (code: string | null, discount: number) => void
+  clearPromoCode: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -36,6 +40,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMigratedCart, setHasMigratedCart] = useState(false)
+  const [promoCode, setPromoCodeState] = useState<string | null>(null)
+  const [promoDiscount, setPromoDiscount] = useState(0)
 
   // Load cart items on mount and when session changes
   useEffect(() => {
@@ -267,7 +273,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!session?.user) {
       localStorage.removeItem('guest-cart')
     }
+    clearPromoCode()
   }
+
+  const setPromoCode = (code: string | null, discount: number) => {
+    setPromoCodeState(code)
+    setPromoDiscount(discount)
+    // Store in localStorage for guest users
+    if (!session?.user) {
+      if (code) {
+        localStorage.setItem('guest-promo-code', JSON.stringify({ code, discount }))
+      } else {
+        localStorage.removeItem('guest-promo-code')
+      }
+    }
+  }
+
+  const clearPromoCode = () => {
+    setPromoCodeState(null)
+    setPromoDiscount(0)
+    if (!session?.user) {
+      localStorage.removeItem('guest-promo-code')
+    }
+  }
+
+  // Load promo code from localStorage for guest users
+  useEffect(() => {
+    if (!session?.user && status === 'unauthenticated') {
+      const savedPromo = localStorage.getItem('guest-promo-code')
+      if (savedPromo) {
+        try {
+          const { code, discount } = JSON.parse(savedPromo)
+          setPromoCodeState(code)
+          setPromoDiscount(discount)
+        } catch (e) {
+          // Invalid data, clear it
+          localStorage.removeItem('guest-promo-code')
+        }
+      }
+    }
+  }, [session, status])
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -281,6 +326,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         clearCart,
         loading,
+        promoCode,
+        promoDiscount,
+        setPromoCode,
+        clearPromoCode,
       }}
     >
       {children}

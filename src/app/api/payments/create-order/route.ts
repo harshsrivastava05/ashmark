@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Razorpay from 'razorpay'
+import { validatePromoCode, isNewUser } from '@/lib/promo-codes'
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { amount, addressId, idempotencyKey } = await request.json()
+    const { amount, addressId, idempotencyKey, promoCode } = await request.json()
 
     // Load cart items to create order items from real data
     const cartItems = await prisma.cartItem.findMany({
@@ -26,7 +27,54 @@ export async function POST(request: NextRequest) {
     // Compute totals from cart to avoid hardcoded values
     const subtotal = cartItems.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
     const shipping = subtotal > 1000 ? 0 : (cartItems.length > 0 ? 100 : 0)
-    const computedTotal = subtotal + shipping
+    
+    // Validate and apply promo code if provided
+    let discount = 0
+    let appliedPromoCode: string | null = null
+    
+    if (promoCode) {
+      // Get user to check if they're a new user
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { createdAt: true },
+      })
+
+      if (user) {
+        const userIsNew = isNewUser(user.createdAt)
+        
+        // Check if user has already used this promo code
+        const existingUsage = await prisma.promoCodeUsage.findUnique({
+          where: {
+            userId_code: {
+              userId: session.user.id,
+              code: promoCode.toUpperCase().trim(),
+            },
+          },
+        })
+
+        if (existingUsage) {
+          return NextResponse.json(
+            { error: 'This promo code has already been used' },
+            { status: 400 }
+          )
+        }
+
+        // Validate promo code
+        const validation = validatePromoCode(promoCode, subtotal, userIsNew)
+        
+        if (!validation.valid) {
+          return NextResponse.json(
+            { error: validation.error || 'Invalid promo code' },
+            { status: 400 }
+          )
+        }
+
+        discount = validation.discount || 0
+        appliedPromoCode = promoCode.toUpperCase().trim()
+      }
+    }
+
+    const computedTotal = subtotal + shipping - discount
 
     // If client sent amount, prefer computed to avoid tampering
     const finalAmount = computedTotal
@@ -48,6 +96,8 @@ export async function POST(request: NextRequest) {
           subtotal: subtotal,
           tax: 0,
           shipping: shipping,
+          discount: discount > 0 ? discount : null,
+          promoCode: appliedPromoCode,
           razorpayOrderId: razorpayOrder.id,
           addressId,
           shippingAddressId: addressId, // Set shippingAddressId to link the address
@@ -61,6 +111,8 @@ export async function POST(request: NextRequest) {
           subtotal: subtotal,
           tax: 0,
           shipping: shipping,
+          discount: discount > 0 ? discount : null,
+          promoCode: appliedPromoCode,
           razorpayOrderId: razorpayOrder.id,
           addressId,
           shippingAddressId: addressId, // Set shippingAddressId to link the address
@@ -75,6 +127,17 @@ export async function POST(request: NextRequest) {
           },
         },
       })
+
+      // Track promo code usage if applied
+      if (appliedPromoCode && discount > 0) {
+        await prisma.promoCodeUsage.create({
+          data: {
+            code: appliedPromoCode,
+            userId: session.user.id,
+            orderId: order.id,
+          },
+        })
+      }
     }
 
     return NextResponse.json({
