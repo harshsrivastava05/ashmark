@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
+import { jsonToStringArray } from "@/lib/utils"
 import { Navbar } from "@/components/layout/navbar"
 import { AdminProductHeader } from "@/components/admin/products/admin-product-header"
 import { AdminProductDetails } from "@/components/admin/products/admin-product-details"
@@ -93,10 +94,10 @@ export default async function AdminProductDetailsPage({
     ...product,
     price: Number(product.price),
     comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
-    images: Array.isArray(product.images) ? product.images.filter((item): item is string => typeof item === 'string') : [],
-    sizes: Array.isArray(product.sizes) ? product.sizes.filter((item): item is string => typeof item === 'string') : [],
-    colors: Array.isArray(product.colors) ? product.colors.filter((item): item is string => typeof item === 'string') : [],
-    storyImages: Array.isArray(product.storyImages) ? product.storyImages.filter((item): item is string => typeof item === 'string') : [],
+    images: jsonToStringArray(product.images),
+    sizes: jsonToStringArray(product.sizes) as string[],
+    colors: jsonToStringArray(product.colors) as string[],
+    storyImages: jsonToStringArray(product.storyImages),
     createdAt: product.createdAt.toISOString(),
     category: {
       ...product.category,

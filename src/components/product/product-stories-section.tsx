@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import Image from 'next/image'
+import { jsonToStringArray } from '@/lib/utils'
 
 export async function ProductStoriesSection() {
   try {
@@ -59,13 +60,15 @@ export async function ProductStoriesSection() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {productsWithStories.map((product) => (
+            {productsWithStories.map((product) => {
+              const images = jsonToStringArray(product.images)
+              return (
               <Card key={product.id} className="group hover:shadow-lg transition-shadow">
                 <CardHeader className="p-0">
                   <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                    {product.images.length > 0 ? (
+                    {images.length > 0 ? (
                       <Image
-                        src={product.images[0]}
+                        src={images[0]}
                         alt={product.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -95,7 +98,7 @@ export async function ProductStoriesSection() {
                   
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-gray-900">
-                      ₹{product.price.toNumber()}
+                      ₹{Number(product.price)}
                     </span>
                     <Link
                       href={`/products/${product.slug}`}
@@ -106,7 +109,8 @@ export async function ProductStoriesSection() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
 
           <div className="text-center mt-12">

@@ -30,9 +30,25 @@ export default async function ProductPage({
     price: Number(product.price),
     comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
     images: jsonToStringArray(product.images),
-    sizes: jsonToStringArray(product.sizes),
-    colors: jsonToStringArray(product.colors),
+    sizes: jsonToStringArray(product.sizes) as string[],
+    colors: jsonToStringArray(product.colors) as string[],
     storyImages: jsonToStringArray(product.storyImages),
+  } as {
+    id: string
+    name: string
+    description: string | null
+    price: number
+    comparePrice: number | null
+    images: string[]
+    sizes: string[]
+    colors: string[]
+    stock: number
+    featured: boolean
+    trending: boolean
+    category: {
+      name: string
+    }
+    [key: string]: unknown
   }
 
   return (
@@ -42,10 +58,10 @@ export default async function ProductPage({
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Product Images */}
-            <ProductImages images={jsonToStringArray(product.images)} name={product.name} />
+            <ProductImages images={serializedProduct.images} name={serializedProduct.name} />
             
             {/* Product Info */}
-            <ProductInfo product={{ ...product, price: Number(product.price), comparePrice: product.comparePrice ? Number(product.comparePrice) : null, images: jsonToStringArray(product.images), sizes: jsonToStringArray(product.sizes), colors: jsonToStringArray(product.colors) }} />
+            <ProductInfo product={serializedProduct} />
           </div>
           
           {/* Product Details Tabs */}
