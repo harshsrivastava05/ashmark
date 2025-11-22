@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -120,15 +119,15 @@ model Product {
   description   String?        @db.Text
   price         Decimal        @db.Decimal(10, 2)
   comparePrice  Decimal?       @db.Decimal(10, 2)
-  images        String[]
-  sizes         Size[]
-  colors        Color[]
+  images        Json           @default("[]")
+  sizes         Json           @default("[]")
+  colors        Json           @default("[]")
   stock         Int            @default(0)
   featured      Boolean        @default(false)
   trending      Boolean        @default(false)
   storyTitle    String?        @map("story_title")
   storyContent  String?        @db.Text @map("story_content")
-  storyImages   String[]       @map("story_images")
+  storyImages   Json           @default("[]") @map("story_images")
   categoryId    String         @map("category_id")
   category      Category       @relation(fields: [categoryId], references: [id])
   cartItems     CartItem[]

@@ -9,7 +9,7 @@ A modern, full-featured e-commerce platform built with Next.js for selling premi
 ![Next.js](https://img.shields.io/badge/Next.js-15.5.5-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Prisma](https://img.shields.io/badge/Prisma-6.17.1-2D3748)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-316192)
+![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1)
 
 ## ✨ Features
 
@@ -36,7 +36,7 @@ A modern, full-featured e-commerce platform built with Next.js for selling premi
 
 - **Framework**: [Next.js 15.5.5](https://nextjs.org/) with App Router
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Database**: [Neon](https://neon.tech/) (Serverless PostgreSQL) with [Prisma ORM](https://www.prisma.io/)
+- **Database**: MySQL with [Prisma ORM](https://www.prisma.io/)
 - **Authentication**: [NextAuth.js](https://next-auth.js.org/) with Google OAuth
 - **Payment**: [Razorpay](https://razorpay.com/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
@@ -50,7 +50,7 @@ A modern, full-featured e-commerce platform built with Next.js for selling premi
 Before you begin, ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [Neon](https://neon.tech/) database account (or any PostgreSQL database)
+- MySQL database account
 - [Git](https://git-scm.com/)
 
 ## 🛠️ Installation
@@ -70,9 +70,8 @@ Before you begin, ensure you have the following installed:
    
    Create a `.env` file in the root directory and add the following variables:
    ```env
-   # Database (Neon PostgreSQL)
-   DATABASE_URL="postgresql://user:password@ep-xxx.region.neon.tech/ashmark?sslmode=require"
-   DIRECT_URL="postgresql://user:password@ep-xxx.region.neon.tech/ashmark?sslmode=require"
+   # Database (MySQL)
+   DATABASE_URL="mysql://user:password@host:port/database"
    
    # NextAuth
    NEXTAUTH_URL="http://localhost:3000"
@@ -161,7 +160,7 @@ ashmark/
 
 ## 🗄️ Database Schema
 
-The application uses Prisma ORM with Neon (Serverless PostgreSQL). Key models include:
+The application uses Prisma ORM with MySQL. Key models include:
 
 - **User** - User accounts and authentication
 - **Product** - Product catalog with images, sizes, and colors
@@ -225,7 +224,7 @@ The application can be deployed on any platform that supports Next.js:
 - Render
 
 Make sure to:
-- Set up a Neon database (or any PostgreSQL database)
+- Set up a MySQL database
 - Configure all environment variables
 - Run database migrations
 - Set up UploadThing account for file uploads
