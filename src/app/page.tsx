@@ -53,7 +53,7 @@ export default async function HomePage() {
       slug: p.slug,
       price: Number(p.price),
       comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
-      images: p.images,
+      images: Array.isArray(p.images) ? p.images.filter((item: unknown): item is string => typeof item === 'string') : [],
       featured: p.featured,
       trending: p.trending,
       category: { name: p.category.name },

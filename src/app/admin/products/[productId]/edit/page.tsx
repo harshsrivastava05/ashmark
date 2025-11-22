@@ -7,6 +7,7 @@ import { EditProductPreview } from "@/components/admin/products/edit-product-pre
 import { ArrowLeft, Package } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { jsonToStringArray } from "@/lib/utils"
 
 export default async function AdminEditProductPage({
   params,
@@ -32,11 +33,15 @@ export default async function AdminEditProductPage({
     notFound()
   }
 
-  // Serialize Prisma Decimal fields for client components
+  // Serialize Prisma Decimal and Json fields for client components
   const serializedProduct = {
     ...product,
     price: Number(product.price),
     comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+    images: jsonToStringArray(product.images),
+    sizes: jsonToStringArray(product.sizes),
+    colors: jsonToStringArray(product.colors),
+    storyImages: jsonToStringArray(product.storyImages),
   }
 
   return (

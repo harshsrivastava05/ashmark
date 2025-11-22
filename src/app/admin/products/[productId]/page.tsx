@@ -93,6 +93,10 @@ export default async function AdminProductDetailsPage({
     ...product,
     price: Number(product.price),
     comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+    images: Array.isArray(product.images) ? product.images.filter((item): item is string => typeof item === 'string') : [],
+    sizes: Array.isArray(product.sizes) ? product.sizes.filter((item): item is string => typeof item === 'string') : [],
+    colors: Array.isArray(product.colors) ? product.colors.filter((item): item is string => typeof item === 'string') : [],
+    storyImages: Array.isArray(product.storyImages) ? product.storyImages.filter((item): item is string => typeof item === 'string') : [],
     createdAt: product.createdAt.toISOString(),
     category: {
       ...product.category,

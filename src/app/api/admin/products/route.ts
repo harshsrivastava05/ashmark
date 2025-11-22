@@ -80,11 +80,15 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where })
     ])
 
-    // Serialize Decimal fields
+    // Serialize Decimal and Json fields
     const serializedProducts = products.map(product => ({
       ...product,
       price: Number(product.price),
       comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+      images: Array.isArray(product.images) ? product.images.filter((item: unknown): item is string => typeof item === 'string') : [],
+      sizes: Array.isArray(product.sizes) ? product.sizes.filter((item: unknown): item is string => typeof item === 'string') : [],
+      colors: Array.isArray(product.colors) ? product.colors.filter((item: unknown): item is string => typeof item === 'string') : [],
+      storyImages: Array.isArray(product.storyImages) ? product.storyImages.filter((item: unknown): item is string => typeof item === 'string') : [],
     }))
 
     return NextResponse.json({

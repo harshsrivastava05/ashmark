@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { jsonToStringArray } from '@/lib/utils'
 
 export async function GET(
   request: NextRequest,
@@ -23,6 +24,10 @@ export async function GET(
       ...product,
       price: Number(product.price),
       comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+      images: jsonToStringArray(product.images),
+      sizes: jsonToStringArray(product.sizes),
+      colors: jsonToStringArray(product.colors),
+      storyImages: jsonToStringArray(product.storyImages),
     }
 
     return NextResponse.json(serializedProduct)

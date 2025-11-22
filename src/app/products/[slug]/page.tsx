@@ -7,6 +7,7 @@ import { ProductTabs } from "@/components/product/product-tabs"
 import { RelatedProducts } from "@/components/product/related-products"
 import { ReviewSection } from "@/components/product/review-section"
 import { prisma } from "@/lib/db"
+import { jsonToStringArray } from "@/lib/utils"
 
 export default async function ProductPage({
   params,
@@ -28,6 +29,10 @@ export default async function ProductPage({
     ...product,
     price: Number(product.price),
     comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+    images: jsonToStringArray(product.images),
+    sizes: jsonToStringArray(product.sizes),
+    colors: jsonToStringArray(product.colors),
+    storyImages: jsonToStringArray(product.storyImages),
   }
 
   return (
@@ -37,10 +42,10 @@ export default async function ProductPage({
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Product Images */}
-            <ProductImages images={product.images} name={product.name} />
+            <ProductImages images={jsonToStringArray(product.images)} name={product.name} />
             
             {/* Product Info */}
-            <ProductInfo product={{ ...product, price: Number(product.price), comparePrice: product.comparePrice ? Number(product.comparePrice) : null }} />
+            <ProductInfo product={{ ...product, price: Number(product.price), comparePrice: product.comparePrice ? Number(product.comparePrice) : null, images: jsonToStringArray(product.images), sizes: jsonToStringArray(product.sizes), colors: jsonToStringArray(product.colors) }} />
           </div>
           
           {/* Product Details Tabs */}
