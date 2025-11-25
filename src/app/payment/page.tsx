@@ -40,13 +40,15 @@ export default async function PaymentPage({
     }
 
     // Serialize Decimal fields to numbers for client components
+    type OrderWithRelations = NonNullable<typeof rawOrder>
+
     order = {
       ...rawOrder,
       total: Number(rawOrder.total),
       subtotal: Number(rawOrder.subtotal),
       tax: Number(rawOrder.tax),
       shipping: Number(rawOrder.shipping),
-      items: rawOrder.items.map(item => ({
+      items: rawOrder.items.map((item: OrderWithRelations['items'][number]) => ({
         ...item,
         price: Number(item.price),
         product: {

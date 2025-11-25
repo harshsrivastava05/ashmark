@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
       _count: { rating: true },
     })
 
+    type RatingGroup = (typeof ratingDistribution)[number]
+
     return NextResponse.json({
       reviews,
       pagination: {
@@ -60,10 +62,13 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
       averageRating: avgRating._avg.rating || 0,
-      ratingDistribution: ratingDistribution.reduce((acc, item) => {
-        acc[item.rating] = item._count.rating
-        return acc
-      }, {} as Record<number, number>),
+      ratingDistribution: ratingDistribution.reduce(
+        (acc: Record<number, number>, group: RatingGroup) => {
+          acc[group.rating] = group._count.rating
+          return acc
+        },
+        {}
+      ),
     })
   } catch (error) {
     console.error('Error fetching reviews:', error)

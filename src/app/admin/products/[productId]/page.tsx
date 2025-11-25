@@ -104,15 +104,16 @@ export default async function AdminProductDetailsPage({
       createdAt: product.category.createdAt.toISOString(),
       updatedAt: product.category.updatedAt.toISOString(),
     },
-    orderItems: product.orderItems.map((item) => ({
+    orderItems: product.orderItems.map((item: any) => ({
       ...item,
+      price: Number(item.price),
       createdAt: item.createdAt.toISOString(),
       order: {
         ...item.order,
         createdAt: item.order.createdAt.toISOString(),
       },
     })),
-    wishlistItems: product.wishlistItems.map((w) => ({
+    wishlistItems: product.wishlistItems.map((w: any) => ({
       ...w,
       createdAt: w.createdAt.toISOString(),
     })),

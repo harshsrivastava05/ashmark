@@ -87,7 +87,9 @@ export async function generateStaticParams() {
     select: { slug: true },
   })
 
-  return products.map((product) => ({
+  type ProductSlug = (typeof products)[number]
+
+  return products.map((product: ProductSlug) => ({
     slug: product.slug,
   }))
 }

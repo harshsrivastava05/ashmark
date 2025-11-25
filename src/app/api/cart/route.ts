@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Size, Color } from '@prisma/client'
+
+const ALLOWED_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+type SizeValue = (typeof ALLOWED_SIZES)[number]
+
+const ALLOWED_COLORS = [
+  'BLACK',
+  'WHITE',
+  'GRAY',
+  'RED',
+  'BLUE',
+  'GREEN',
+  'YELLOW',
+  'ORANGE',
+  'PURPLE',
+  'PINK',
+] as const
+type ColorValue = (typeof ALLOWED_COLORS)[number]
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +30,19 @@ export async function POST(request: NextRequest) {
     const productId: string = String(body.productId || '')
     const quantity: number = Math.max(1, Math.min(99, Number(body.quantity || 1)))
     // Normalize variant values to Prisma enums if provided
-    const size: Size | null = body.size
-      ? (String(body.size).toUpperCase() as Size)
-      : null
-    const color: Color | null = body.color
-      ? (String(body.color).toUpperCase() as Color)
-      : null
+    const requestedSize = body.size ? String(body.size).toUpperCase() : null
+    const requestedColor = body.color ? String(body.color).toUpperCase() : null
+
+    if (requestedSize && !ALLOWED_SIZES.includes(requestedSize as SizeValue)) {
+      return NextResponse.json({ error: 'Invalid size value' }, { status: 400 })
+    }
+
+    if (requestedColor && !ALLOWED_COLORS.includes(requestedColor as ColorValue)) {
+      return NextResponse.json({ error: 'Invalid color value' }, { status: 400 })
+    }
+
+    const size: SizeValue | null = requestedSize as SizeValue | null
+    const color: ColorValue | null = requestedColor as ColorValue | null
 
     if (!productId) {
       return NextResponse.json({ error: 'productId is required' }, { status: 400 })
@@ -28,14 +51,6 @@ export async function POST(request: NextRequest) {
     const product = await prisma.product.findUnique({ where: { id: productId } })
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-    }
-
-    // Validate enum values against schema if provided
-    if (size && !Object.values(Size).includes(size)) {
-      return NextResponse.json({ error: 'Invalid size value' }, { status: 400 })
-    }
-    if (color && !Object.values(Color).includes(color)) {
-      return NextResponse.json({ error: 'Invalid color value' }, { status: 400 })
     }
 
     const existing = await prisma.cartItem.findFirst({
@@ -93,12 +108,14 @@ export async function GET() {
       },
     })
 
-    const cartItems = items.map((it) => ({
-      ...it,
+    type CartItemWithProduct = typeof items[number]
+
+    const cartItems = items.map((item: CartItemWithProduct) => ({
+      ...item,
       product: {
-        ...it.product,
-        price: Number(it.product.price),
-        comparePrice: it.product.comparePrice ? Number(it.product.comparePrice) : null,
+        ...item.product,
+        price: Number(item.product.price),
+        comparePrice: item.product.comparePrice ? Number(item.product.comparePrice) : null,
       },
     }))
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -25,13 +27,15 @@ export async function GET(request: NextRequest) {
       ]
     }
 
+    const orderInclude = {
+      user: { select: { name: true, email: true } },
+      shippingAddress: true,
+      items: true,
+    } as const
+
     const orders = await prisma.order.findMany({
       where,
-      include: {
-        user: { select: { name: true, email: true } },
-        shippingAddress: true,
-        items: true,
-      },
+      include: orderInclude,
       orderBy: { createdAt: 'desc' },
     })
 
@@ -49,22 +53,29 @@ export async function GET(request: NextRequest) {
       'Pincode',
     ]
 
-    const rows = orders.map((o) => [
-      o.id,
-      o.createdAt.toISOString(),
-      o.status,
-      o.paymentStatus,
-      o.user?.name ?? '',
-      o.user?.email ?? '',
-      o.items.reduce((sum, it) => sum + it.quantity, 0).toString(),
-      Number(o.total).toString(),
-      o.shippingAddress ? o.shippingAddress.city : '',
-      o.shippingAddress ? o.shippingAddress.state : '',
-      o.shippingAddress ? o.shippingAddress.pincode : '',
+    type OrderWithRelations = (typeof orders)[number]
+    type OrderItem = OrderWithRelations['items'][number]
+
+    const rows = orders.map((order: OrderWithRelations) => [
+      order.id,
+      order.createdAt.toISOString(),
+      order.status,
+      order.paymentStatus,
+      order.user?.name ?? '',
+      order.user?.email ?? '',
+      order.items.reduce((sum: number, item: OrderItem) => sum + item.quantity, 0).toString(),
+      Number(order.total).toString(),
+      order.shippingAddress ? order.shippingAddress.city : '',
+      order.shippingAddress ? order.shippingAddress.state : '',
+      order.shippingAddress ? order.shippingAddress.pincode : '',
     ])
 
     const csv = [headers, ...rows]
-      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
+      .map((row) =>
+        row
+          .map((value: string) => `"${String(value).replace(/"/g, '""')}"`)
+          .join(',')
+      )
       .join('\n')
 
     return new NextResponse(csv, {

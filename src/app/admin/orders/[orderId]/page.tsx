@@ -55,7 +55,7 @@ export default async function AdminOrderDetailsPage({
     shipping: Number(order.shipping),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
-    items: order.items.map(item => ({
+    items: order.items.map((item: any) => ({
       ...item,
       price: Number(item.price),
       createdAt: item.createdAt.toISOString(),

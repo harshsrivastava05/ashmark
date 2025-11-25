@@ -24,8 +24,13 @@ export async function POST(request: NextRequest) {
       include: { product: true },
     })
 
+    type CartItemWithProduct = (typeof cartItems)[number]
+
     // Compute totals from cart to avoid hardcoded values
-    const subtotal = cartItems.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
+    const subtotal = cartItems.reduce(
+      (sum: number, item: CartItemWithProduct) => sum + Number(item.product.price) * item.quantity,
+      0
+    )
     const shipping = subtotal > 1000 ? 0 : (cartItems.length > 0 ? 100 : 0)
     
     // Validate and apply promo code if provided
@@ -117,7 +122,7 @@ export async function POST(request: NextRequest) {
           addressId,
           shippingAddressId: addressId, // Set shippingAddressId to link the address
           items: {
-            create: cartItems.map((ci) => ({
+            create: cartItems.map((ci: CartItemWithProduct) => ({
               productId: ci.productId,
               quantity: ci.quantity,
               price: Number(ci.product.price),

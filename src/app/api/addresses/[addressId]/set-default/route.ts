@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
@@ -35,7 +36,7 @@ export async function PUT(
     }
 
     // Use transaction to ensure consistency
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Remove default from all other addresses
       await tx.address.updateMany({
         where: { 

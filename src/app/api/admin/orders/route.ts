@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -39,36 +41,38 @@ export async function GET(request: NextRequest) {
     const orderBy: any = {}
     orderBy[sort] = 'desc'
 
-    const [orders, total] = await Promise.all([
-      prisma.order.findMany({
-        where,
+    const orderInclude = {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      items: {
         include: {
-          user: {
+          product: {
             select: {
-              id: true,
               name: true,
-              email: true,
-              image: true,
-            },
-          },
-          items: {
-            include: {
-              product: {
-                select: {
-                  name: true,
-                  images: true,
-                },
-              },
-            },
-          },
-          shippingAddress: {
-            select: {
-              city: true,
-              state: true,
-              pincode: true,
+              images: true,
             },
           },
         },
+      },
+      shippingAddress: {
+        select: {
+          city: true,
+          state: true,
+          pincode: true,
+        },
+      },
+    } as const
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: orderInclude,
         skip,
         take: limit,
         orderBy,
@@ -76,30 +80,33 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where }),
     ])
 
-    const serialized = orders.map((o) => ({
-      id: o.id,
-      status: o.status,
-      paymentStatus: o.paymentStatus,
-      total: Number(o.total),
-      createdAt: o.createdAt.toISOString(),
+    type AdminOrder = typeof orders[number]
+    type AdminOrderItem = AdminOrder['items'][number]
+
+    const serialized = orders.map((order: AdminOrder) => ({
+      id: order.id,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      total: Number(order.total),
+      createdAt: order.createdAt.toISOString(),
       user: {
-        id: o.user?.id || '',
-        name: o.user?.name || null,
-        email: o.user?.email || '',
-        image: o.user?.image || null,
+        id: order.user?.id || '',
+        name: order.user?.name || null,
+        email: order.user?.email || '',
+        image: order.user?.image || null,
       },
-      items: o.items.map((it) => ({
-        quantity: it.quantity,
+      items: order.items.map((item: AdminOrderItem) => ({
+        quantity: item.quantity,
         product: {
-          name: it.product.name,
-          images: it.product.images,
+          name: item.product.name,
+          images: item.product.images,
         },
       })),
-      shippingAddress: o.shippingAddress
+      shippingAddress: order.shippingAddress
         ? {
-            city: o.shippingAddress.city,
-            state: o.shippingAddress.state,
-            pincode: o.shippingAddress.pincode,
+            city: order.shippingAddress.city,
+            state: order.shippingAddress.state,
+            pincode: order.shippingAddress.pincode,
           }
         : null,
     }))

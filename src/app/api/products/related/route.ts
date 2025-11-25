@@ -22,10 +22,13 @@ export async function GET(request: NextRequest) {
       include: { category: true },
     })
 
-    const serialized = products.map(p => ({
-      ...p,
-      price: Number(p.price),
-      comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
+    // type RelatedProduct = Awaited<ReturnType<typeof prisma.product.findMany>>[number]
+    type RelatedProduct = (typeof products)[number]
+
+    const serialized = products.map((product: RelatedProduct) => ({
+      ...product,
+      price: Number(product.price),
+      comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
     }))
 
     return NextResponse.json({ products: serialized })

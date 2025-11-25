@@ -49,6 +49,8 @@ export default async function OrderDetailsPage({
   }
 
   // Serialize dates and Decimal fields to strings/numbers for client components
+  type OrderWithRelations = NonNullable<typeof order>
+
   const serializedOrder = {
     ...order,
     total: Number(order.total),
@@ -57,7 +59,7 @@ export default async function OrderDetailsPage({
     shipping: Number(order.shipping),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
-    items: order.items.map(item => ({
+    items: order.items.map((item: OrderWithRelations['items'][number]) => ({
       ...item,
       price: Number(item.price),
       createdAt: item.createdAt.toISOString(),
@@ -71,8 +73,8 @@ export default async function OrderDetailsPage({
           ...item.product.category,
           createdAt: item.product.category.createdAt.toISOString(),
           updatedAt: item.product.category.updatedAt.toISOString(),
-        }
-      }
+        },
+      },
     })),
     shippingAddress: order.shippingAddress ? {
       ...order.shippingAddress,

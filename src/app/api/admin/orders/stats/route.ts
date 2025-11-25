@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-
+export const dynamic = 'force-dynamic'
 export async function GET(_request: NextRequest) {
   try {
     const session = await auth()
@@ -31,10 +31,15 @@ export async function GET(_request: NextRequest) {
       prisma.order.groupBy({ by: ['status'], _count: { status: true } }),
     ])
 
-    const statusCounts = statusGroups.reduce((acc, s) => {
-      acc[s.status] = s._count.status
-      return acc
-    }, {} as Record<string, number>)
+    type StatusGroup = (typeof statusGroups)[number]
+
+    const statusCounts = statusGroups.reduce(
+      (acc: Record<string, number>, statusGroup: StatusGroup) => {
+        acc[statusGroup.status] = statusGroup._count.status
+        return acc
+      },
+      {}
+    )
 
     return NextResponse.json({
       // Header tiles

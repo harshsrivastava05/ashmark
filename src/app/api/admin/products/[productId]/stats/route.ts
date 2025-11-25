@@ -19,7 +19,7 @@ export async function GET(
       totalSales,
       totalRevenue,
       wishlistCount,
-      orderCount
+      orderGroups,
     ] = await Promise.all([
       // Total units sold from order items
       prisma.orderItem.aggregate({
@@ -54,14 +54,14 @@ export async function GET(
             status: { not: 'CANCELLED' }
           }
         }
-      }).then(result => result.length)
+      }),
     ])
 
     return NextResponse.json({
       totalSales: totalSales._sum.quantity || 0,
       totalRevenue: totalRevenue._sum.price || 0,
       wishlistCount,
-      orderCount
+      orderCount: orderGroups.length,
     })
 
   } catch (error) {

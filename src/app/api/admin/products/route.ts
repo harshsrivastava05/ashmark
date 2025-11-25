@@ -81,7 +81,11 @@ export async function GET(request: NextRequest) {
     ])
 
     // Serialize Decimal and Json fields
-    const serializedProducts = products.map(product => ({
+    // type AdminProduct = Awaited<ReturnType<typeof prisma.product.findMany>>[number]
+    type AdminProduct = (typeof products)[number]
+
+
+    const serializedProducts = products.map((product: AdminProduct) => ({
       ...product,
       price: Number(product.price),
       comparePrice: product.comparePrice ? Number(product.comparePrice) : null,

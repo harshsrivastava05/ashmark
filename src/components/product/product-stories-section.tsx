@@ -27,6 +27,9 @@ export async function ProductStoriesSection() {
       take: 6 // Show latest 6 products with stories
     })
 
+    // type ProductWithStory = Awaited<ReturnType<typeof prisma.product.findMany>>[number]
+    type ProductWithStory = (typeof productsWithStories)[number]
+
     if (productsWithStories.length === 0) {
       return (
         <section className="py-16 bg-gray-50">
@@ -60,7 +63,7 @@ export async function ProductStoriesSection() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {productsWithStories.map((product) => {
+            {productsWithStories.map((product: ProductWithStory) => {
               const images = jsonToStringArray(product.images)
               return (
               <Card key={product.id} className="group hover:shadow-lg transition-shadow">
