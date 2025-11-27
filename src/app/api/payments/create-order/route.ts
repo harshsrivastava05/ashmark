@@ -16,7 +16,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { amount, addressId, idempotencyKey, promoCode } = await request.json()
+    const {
+      amount,
+      addressId,
+      idempotencyKey,
+      promoCode,
+      paymentMethod,
+    } = await request.json()
 
     // Load cart items to create order items from real data
     const cartItems = await prisma.cartItem.findMany({
@@ -25,6 +31,14 @@ export async function POST(request: NextRequest) {
     })
 
     type CartItemWithProduct = (typeof cartItems)[number]
+
+    // Guard against empty carts (can happen if client and DB go out of sync)
+    if (cartItems.length === 0) {
+      return NextResponse.json(
+        { error: 'Your cart is empty. Please add items again.' },
+        { status: 400 }
+      )
+    }
 
     // Compute totals from cart to avoid hardcoded values
     const subtotal = cartItems.reduce(
@@ -83,6 +97,57 @@ export async function POST(request: NextRequest) {
 
     // If client sent amount, prefer computed to avoid tampering
     const finalAmount = computedTotal
+    const normalizedPaymentMethod = paymentMethod === 'COD' ? 'COD' : 'ONLINE'
+    const orderItemsPayload = cartItems.map((ci: CartItemWithProduct) => ({
+      productId: ci.productId,
+      quantity: ci.quantity,
+      price: Number(ci.product.price),
+      size: ci.size || undefined,
+      color: ci.color || undefined,
+    }))
+
+    if (normalizedPaymentMethod === 'COD') {
+      const order = await prisma.order.create({
+        data: {
+          userId: session.user.id,
+          total: finalAmount,
+          subtotal,
+          tax: 0,
+          shipping,
+          discount: discount > 0 ? discount : null,
+          promoCode: appliedPromoCode,
+          paymentMethod: 'COD',
+          paymentStatus: 'PENDING',
+          status: 'CONFIRMED',
+          addressId,
+          shippingAddressId: addressId,
+          items: {
+            create: orderItemsPayload,
+          },
+        },
+      })
+
+      await prisma.cartItem.deleteMany({
+        where: { userId: session.user.id },
+      })
+
+      if (appliedPromoCode && discount > 0) {
+        await prisma.promoCodeUsage.create({
+          data: {
+            code: appliedPromoCode,
+            userId: session.user.id,
+            orderId: order.id,
+          },
+        })
+      }
+
+      return NextResponse.json({
+        orderId: order.id,
+        amount: finalAmount,
+        currency: 'INR',
+        paymentMethod: 'COD',
+      })
+    }
 
     // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
@@ -106,6 +171,8 @@ export async function POST(request: NextRequest) {
           razorpayOrderId: razorpayOrder.id,
           addressId,
           shippingAddressId: addressId, // Set shippingAddressId to link the address
+          paymentMethod: 'ONLINE',
+          paymentStatus: 'PENDING',
         },
       })
     } else {
@@ -121,14 +188,11 @@ export async function POST(request: NextRequest) {
           razorpayOrderId: razorpayOrder.id,
           addressId,
           shippingAddressId: addressId, // Set shippingAddressId to link the address
+          paymentMethod: 'ONLINE',
+          paymentStatus: 'PENDING',
+          status: 'PENDING',
           items: {
-            create: cartItems.map((ci: CartItemWithProduct) => ({
-              productId: ci.productId,
-              quantity: ci.quantity,
-              price: Number(ci.product.price),
-              size: ci.size || undefined,
-              color: ci.color || undefined,
-            })),
+            create: orderItemsPayload,
           },
         },
       })

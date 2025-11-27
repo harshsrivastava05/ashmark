@@ -14,12 +14,14 @@ import { formatPrice } from "@/lib/utils"
 import { toast } from "@/components/ui/use-toast"
 import { useCart } from "@/contexts/cart-context"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function CheckoutPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { error, isLoading, Razorpay } = useRazorpay()
-  const { cartItems } = useCart()
+  const { cartItems, clearCart } = useCart()
   
   type Address = {
     id: string
@@ -40,6 +42,7 @@ export default function CheckoutPage() {
   const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null)
   const [discount, setDiscount] = useState(0)
   const [applyingPromo, setApplyingPromo] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online")
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -150,10 +153,47 @@ export default function CheckoutPage() {
       return
     }
 
+    if (cartItems.length === 0) {
+      toast({
+        title: "Cart Empty",
+        description: "Your cart looks empty. Please add products again.",
+        variant: "destructive",
+      })
+      router.push("/cart")
+      return
+    }
+
     setProcessing(true)
 
     try {
-      // Create order
+      if (paymentMethod === "cod") {
+        const codResponse = await fetch('/api/payments/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: orderTotal,
+            addressId: selectedAddress.id,
+            promoCode: appliedPromoCode || undefined,
+            paymentMethod: 'COD',
+          }),
+        })
+
+        if (!codResponse.ok) {
+          const { error: message } = await codResponse.json()
+          throw new Error(message || 'Failed to place COD order')
+        }
+
+        const codData = await codResponse.json()
+        clearCart()
+        toast({
+          title: "Order Placed",
+          description: "Your cash on delivery order has been confirmed.",
+        })
+        router.push(`/orders/${codData.orderId}`)
+        return
+      }
+
+      // Create online payment order
       const orderResponse = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,11 +201,13 @@ export default function CheckoutPage() {
           amount: orderTotal,
           addressId: selectedAddress.id,
           promoCode: appliedPromoCode || undefined,
+          paymentMethod: 'ONLINE',
         }),
       })
 
       if (!orderResponse.ok) {
-        throw new Error('Failed to create order')
+        const { error: message } = await orderResponse.json()
+        throw new Error(message || 'Failed to create order')
       }
 
       const orderData = await orderResponse.json()
@@ -197,6 +239,7 @@ export default function CheckoutPage() {
             })
 
             if (verifyResponse.ok) {
+              clearCart()
               toast({
                 title: "Payment Successful",
                 description: "Your order has been placed successfully!",
@@ -230,7 +273,7 @@ export default function CheckoutPage() {
       console.error('Payment error:', error)
       toast({
         title: "Payment Failed",
-        description: "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -312,14 +355,53 @@ export default function CheckoutPage() {
                       <span>Total</span>
                       <span>{formatPrice(orderTotal)}</span>
                     </div>
+
+                    <div className="mb-4 space-y-3">
+                      <Label className="text-sm font-medium text-foreground">Payment Method</Label>
+                      <RadioGroup
+                        value={paymentMethod}
+                        onValueChange={(value) => setPaymentMethod(value as "online" | "cod")}
+                        className="space-y-2"
+                      >
+                        <div className="flex items-start gap-3 p-3 border border-muted rounded-md">
+                          <RadioGroupItem value="online" id="online-payment" className="mt-1" />
+                          <Label htmlFor="online-payment" className="flex-1 cursor-pointer">
+                            <span className="block font-semibold">Online Payment</span>
+                            <span className="text-sm text-muted-foreground">
+                              Pay securely via Razorpay using UPI, cards, or net banking.
+                            </span>
+                          </Label>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 border border-muted rounded-md">
+                          <RadioGroupItem value="cod" id="cod-payment" className="mt-1" />
+                          <Label htmlFor="cod-payment" className="flex-1 cursor-pointer">
+                            <span className="block font-semibold">Cash on Delivery</span>
+                            <span className="text-sm text-muted-foreground">
+                              Pay with cash when the order arrives. No online payment required.
+                            </span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
                     <Button
                       className="w-full bg-crimson-600 hover:bg-crimson-700"
                       onClick={handlePayment}
-                      disabled={processing || isLoading || !selectedAddress}
+                      disabled={
+                        processing ||
+                        !selectedAddress ||
+                        (paymentMethod === "online" && isLoading)
+                      }
                     >
-                      {processing ? "Processing..." : `Pay ${formatPrice(orderTotal)}`}
+                      {processing
+                        ? paymentMethod === "cod"
+                          ? "Placing Order..."
+                          : "Processing..."
+                        : paymentMethod === "cod"
+                          ? "Place COD Order"
+                          : `Pay ${formatPrice(orderTotal)}`}
                     </Button>
-                    {error && (
+                    {error && paymentMethod === "online" && (
                       <p className="text-sm text-destructive mt-2">
                         Error loading payment gateway. Please refresh the page.
                       </p>

@@ -56,8 +56,11 @@ export function AdminOrderDetails({ order }: AdminOrderDetailsProps) {
   const getStatusColor = (status: string, paymentStatus: string) => {
     if (paymentStatus === 'FAILED') return 'bg-red-600'
     if (status === 'DELIVERED') return 'bg-green-600'
-    if (status === 'SHIPPED') return 'bg-blue-600'
+    if (status === 'SHIPPED') return 'bg-purple-600'
     if (status === 'PROCESSING') return 'bg-yellow-600'
+    if (status === 'CONFIRMED') return 'bg-blue-600'
+    if (status === 'CANCELLED') return 'bg-red-600'
+    if (status === 'RETURNED') return 'bg-orange-600'
     return 'bg-gray-600'
   }
 
