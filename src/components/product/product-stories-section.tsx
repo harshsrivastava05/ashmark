@@ -1,9 +1,7 @@
 import { prisma } from '@/lib/db'
-import { ProductStory } from './product-story'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ProductStoryCard } from './product-story-card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import Image from 'next/image'
 import { jsonToStringArray } from '@/lib/utils'
 
 export async function ProductStoriesSection() {
@@ -65,53 +63,22 @@ export async function ProductStoriesSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {productsWithStories.map((product: ProductWithStory) => {
               const images = jsonToStringArray(product.images)
+              const storyImages = jsonToStringArray(product.storyImages)
               return (
-              <Card key={product.id} className="group hover:shadow-lg transition-shadow">
-                <CardHeader className="p-0">
-                  <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                    {images.length > 0 ? (
-                      <Image
-                        src={images[0]}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-400">No Image</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="mb-3">
-                    <Badge variant="secondary" className="text-xs">
-                      {product.category.name}
-                    </Badge>
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {product.storyTitle}
-                  </h3>
-                  
-                  <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                    {product.storyContent}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-gray-900">
-                      ₹{Number(product.price)}
-                    </span>
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-                    >
-                      Read Full Story →
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                <ProductStoryCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: Number(product.price),
+                    storyTitle: product.storyTitle || '',
+                    storyContent: product.storyContent || '',
+                    storyImages: storyImages,
+                    category: product.category,
+                    images: images,
+                  }}
+                />
               )
             })}
           </div>
