@@ -18,7 +18,7 @@ interface Address {
   pincode: string
   country: string
   isDefault: boolean
-  type?: 'home' | 'work' | 'other'
+  type?: "home" | "work" | "other"
 }
 
 interface AddressBookProps {
@@ -37,13 +37,11 @@ export function AddressBook({ userId }: AddressBookProps) {
 
   const fetchAddresses = async () => {
     try {
-      const response = await fetch('/api/addresses')
-      if (response.ok) {
-        const data = await response.json()
-        setAddresses(data.addresses)
-      }
-    } catch (error) {
-      console.error('Error fetching addresses:', error)
+      const response = await fetch("/api/addresses")
+      if (!response.ok) throw new Error()
+      const data = await response.json()
+      setAddresses(data.addresses)
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load addresses",
@@ -55,22 +53,20 @@ export function AddressBook({ userId }: AddressBookProps) {
   }
 
   const deleteAddress = async (addressId: string) => {
-    if (!confirm('Are you sure you want to delete this address?')) return
+    if (!confirm("Are you sure you want to delete this address?")) return
 
     try {
       const response = await fetch(`/api/addresses/${addressId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       })
 
-      if (response.ok) {
-        setAddresses(addresses.filter(addr => addr.id !== addressId))
-        toast({
-          title: "Success",
-          description: "Address deleted successfully",
-        })
-      } else {
-        throw new Error('Failed to delete address')
-      }
+      if (!response.ok) throw new Error()
+
+      setAddresses((prev) => prev.filter((addr) => addr.id !== addressId))
+      toast({
+        title: "Success",
+        description: "Address deleted successfully",
+      })
     } catch {
       toast({
         title: "Error",
@@ -83,21 +79,22 @@ export function AddressBook({ userId }: AddressBookProps) {
   const setDefaultAddress = async (addressId: string) => {
     try {
       const response = await fetch(`/api/addresses/${addressId}/set-default`, {
-        method: 'PUT',
+        method: "PUT",
       })
 
-      if (response.ok) {
-        setAddresses(addresses.map(addr => ({
+      if (!response.ok) throw new Error()
+
+      setAddresses((prev) =>
+        prev.map((addr) => ({
           ...addr,
-          isDefault: addr.id === addressId
-        })))
-        toast({
-          title: "Success",
-          description: "Default address updated",
-        })
-      } else {
-        throw new Error('Failed to update default address')
-      }
+          isDefault: addr.id === addressId,
+        }))
+      )
+
+      toast({
+        title: "Success",
+        description: "Default address updated",
+      })
     } catch {
       toast({
         title: "Error",
@@ -114,9 +111,16 @@ export function AddressBook({ userId }: AddressBookProps) {
   }
 
   const getAddressTypeIcon = (type?: string) => {
-    if (type === 'home') return <Home className="w-4 h-4" />
-    if (type === 'work') return <Building className="w-4 h-4" />
+    if (type === "home") return <Home className="w-4 h-4" />
+    if (type === "work") return <Building className="w-4 h-4" />
     return <MapPin className="w-4 h-4" />
+  }
+
+  const formatPhone = (phone: string) => {
+    if (phone.startsWith("+91")) {
+      return `+91 ${phone.slice(3)}`
+    }
+    return phone
   }
 
   if (loading) {
@@ -128,13 +132,7 @@ export function AddressBook({ userId }: AddressBookProps) {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="p-4 bg-muted animate-pulse">
-                <div className="space-y-2">
-                  <div className="h-4 w-24 bg-muted-foreground/20"></div>
-                  <div className="h-3 w-full bg-muted-foreground/20"></div>
-                  <div className="h-3 w-3/4 bg-muted-foreground/20"></div>
-                </div>
-              </div>
+              <div key={i} className="p-4 bg-muted animate-pulse rounded-md" />
             ))}
           </div>
         </CardContent>
@@ -155,7 +153,7 @@ export function AddressBook({ userId }: AddressBookProps) {
               Manage your saved addresses for faster checkout
             </CardDescription>
           </div>
-          <Button 
+          <Button
             onClick={() => {
               setEditingAddress(null)
               setEditDialogOpen(true)
@@ -166,6 +164,7 @@ export function AddressBook({ userId }: AddressBookProps) {
             Add Address
           </Button>
         </CardHeader>
+
         <CardContent>
           {addresses.length === 0 ? (
             <div className="text-center py-12">
@@ -174,21 +173,14 @@ export function AddressBook({ userId }: AddressBookProps) {
               <p className="text-muted-foreground mb-4">
                 Add your first address for faster checkout
               </p>
-              <Button 
-                onClick={() => {
-                  setEditingAddress(null)
-                  setEditDialogOpen(true)
-                }}
-                className="bg-crimson-600 hover:bg-crimson-700 border-0"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Address
-              </Button>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {addresses.map((address) => (
-                <div key={address.id} className="p-4 bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div
+                  key={address.id}
+                  className="p-4 bg-muted/30 hover:bg-muted/50 transition-colors rounded-md"
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {getAddressTypeIcon(address.type)}
@@ -203,7 +195,7 @@ export function AddressBook({ userId }: AddressBookProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 border-0"
+                        className="h-8 w-8 p-0"
                         onClick={() => {
                           setEditingAddress(address)
                           setEditDialogOpen(true)
@@ -214,26 +206,28 @@ export function AddressBook({ userId }: AddressBookProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 border-0 text-red-600 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-red-600"
                         onClick={() => deleteAddress(address.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="text-sm text-muted-foreground space-y-1 mb-3">
                     <div>{address.street}</div>
-                    <div>{address.city}, {address.state} {address.pincode}</div>
+                    <div>
+                      {address.city}, {address.state} {address.pincode}
+                    </div>
                     <div>{address.country}</div>
-                    <div>Phone: {address.phone}</div>
+                    <div>Phone: {formatPhone(address.phone)}</div>
                   </div>
 
                   {!address.isDefault && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full border-0 bg-background"
+                      className="w-full"
                       onClick={() => setDefaultAddress(address.id)}
                     >
                       Set as Default
@@ -253,5 +247,5 @@ export function AddressBook({ userId }: AddressBookProps) {
         onSave={handleAddressUpdate}
       />
     </>
-  );
+  )
 }
