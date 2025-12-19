@@ -9,7 +9,6 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Plus, MapPin, Edit, Trash2 } from "lucide-react"
-import { toast } from "@/components/ui/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -33,7 +32,6 @@ interface Address {
 }
 
 interface AddressFormProps {
-  addresses: Address[]
   selectedAddress: Address | null
   onAddressSelect: (address: Address) => void
   onAddressUpdate: () => void
@@ -42,9 +40,9 @@ interface AddressFormProps {
 export function AddressForm({
   selectedAddress,
   onAddressSelect,
-  onAddressUpdate
+  onAddressUpdate,
 }: AddressFormProps) {
-
+  const [userAddresses, setUserAddresses] = useState<Address[]>([])
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
 
@@ -59,8 +57,12 @@ export function AddressForm({
     isDefault: false,
   })
 
-  const [userAddresses, setUserAddresses] = useState<Address[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [formError, setFormError] = useState("")
 
+  /* ---------------------------------- */
+  /* Fetch addresses */
+  /* ---------------------------------- */
   useEffect(() => {
     fetchAddresses()
   }, [])
@@ -73,31 +75,38 @@ export function AddressForm({
     }
   }
 
-  /* =========================
-     VALIDATION HELPERS
-  ========================== */
+  /* ---------------------------------- */
+  /* Validation */
+  /* ---------------------------------- */
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
 
-  const isValidPhone = (phone: string) => /^[6-9]\d{9}$/.test(phone)
-  const isValidPincode = (pin: string) => /^\d{6}$/.test(pin)
+    if (!formData.name.trim()) newErrors.name = "Full name is required"
+    if (!formData.street.trim()) newErrors.street = "Street address is required"
+    if (!formData.city.trim()) newErrors.city = "City is required"
+    if (!formData.state.trim()) newErrors.state = "State is required"
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!isValidPhone(formData.phone)) {
-      toast({
-        title: "Invalid Phone Number",
-        description: "Enter a valid 10-digit Indian mobile number",
-        variant: "destructive",
-      })
-      return
+    if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+      newErrors.phone = "Enter valid 10-digit Indian mobile number"
     }
 
-    if (!isValidPincode(formData.pincode)) {
-      toast({
-        title: "Invalid PIN Code",
-        description: "PIN code must be exactly 6 digits",
-        variant: "destructive",
-      })
+    if (!/^\d{6}$/.test(formData.pincode)) {
+      newErrors.pincode = "PIN code must be 6 digits"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  /* ---------------------------------- */
+  /* Submit */
+  /* ---------------------------------- */
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError("")
+
+    if (!validateForm()) {
+      setFormError("Please fix the errors below before continuing.")
       return
     }
 
@@ -110,75 +119,71 @@ export function AddressForm({
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        phone: `+91${formData.phone}`,
+        country: "India",
+      }),
     })
 
-    if (res.ok) {
-      toast({
-        title: "Success",
-        description: editingAddress ? "Address updated" : "Address added",
-      })
-      setIsAddingNew(false)
-      setEditingAddress(null)
-      onAddressUpdate()
-      fetchAddresses()
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to save address",
-        variant: "destructive",
-      })
+    if (!res.ok) {
+      setFormError("Failed to save address. Please try again.")
+      return
     }
-  }
 
-  const handleEdit = (address: Address) => {
-    setFormData(address)
-    setEditingAddress(address)
-    setIsAddingNew(true)
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this address?")) return
-    await fetch(`/api/addresses/${id}`, { method: "DELETE" })
+    setIsAddingNew(false)
+    setEditingAddress(null)
+    resetForm()
     fetchAddresses()
     onAddressUpdate()
   }
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      phone: "",
+      street: "",
+      city: "",
+      state: "",
+      pincode: "",
+      country: "India",
+      isDefault: false,
+    })
+    setErrors({})
+    setFormError("")
+  }
+
+  /* ---------------------------------- */
+  /* UI */
+  /* ---------------------------------- */
   return (
-    <Card>
+    <Card className="border-0 shadow-md">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
           Delivery Address
         </CardTitle>
-        <CardDescription>Select delivery address</CardDescription>
+        <CardDescription>Select your delivery location</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
         <RadioGroup
           value={selectedAddress?.id || ""}
-          onValueChange={(id) => {
-            const addr = userAddresses.find(a => a.id === id)
+          onValueChange={(value) => {
+            const addr = userAddresses.find((a) => a.id === value)
             if (addr) onAddressSelect(addr)
           }}
         >
-          {userAddresses.map(addr => (
-            <div key={addr.id} className="flex gap-3 p-3 bg-muted/30">
-              <RadioGroupItem value={addr.id} />
+          {userAddresses.map((address) => (
+            <div key={address.id} className="flex gap-3 p-3 bg-muted/40">
+              <RadioGroupItem value={address.id} />
               <div className="flex-1">
-                <div className="font-medium">{addr.name}</div>
+                <div className="font-medium">{address.name}</div>
                 <div className="text-sm text-muted-foreground">
-                  {addr.street}, {addr.city}, {addr.state} - {addr.pincode}
+                  {address.street}, {address.city}, {address.state} - {address.pincode}
                 </div>
-                <div className="text-sm">+91 {addr.phone}</div>
-                {addr.isDefault && <Badge>Default</Badge>}
+                <div className="text-sm">Phone: {address.phone}</div>
               </div>
-              <Button size="icon" variant="ghost" onClick={() => handleEdit(addr)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => handleDelete(addr.id)}>
-                <Trash2 className="h-4 w-4 text-red-600" />
-              </Button>
             </div>
           ))}
         </RadioGroup>
@@ -198,84 +203,95 @@ export function AddressForm({
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {formError && (
+                <div className="rounded-md bg-red-50 border border-red-300 p-3 text-sm text-red-700">
+                  {formError}
+                </div>
+              )}
 
               <div>
                 <Label>Full Name</Label>
                 <Input
-                  required
                   value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
+                {errors.name && <p className="text-red-600 text-sm">{errors.name}</p>}
               </div>
 
               <div>
                 <Label>Phone Number</Label>
                 <div className="flex gap-2">
-                  <Input value="+91" disabled className="w-16 text-center" />
+                  <Input value="+91" disabled className="w-20" />
                   <Input
                     inputMode="numeric"
-                    pattern="[0-9]*"
                     maxLength={10}
-                    placeholder="10-digit number"
                     value={formData.phone}
-                    onChange={e =>
+                    onChange={(e) =>
                       setFormData({
                         ...formData,
                         phone: e.target.value.replace(/\D/g, ""),
                       })
                     }
-                    required
                   />
                 </div>
+                {errors.phone && <p className="text-red-600 text-sm">{errors.phone}</p>}
               </div>
 
               <div>
-                <Label>Street</Label>
-                <Input required value={formData.street}
-                  onChange={e => setFormData({ ...formData, street: e.target.value })} />
+                <Label>Street Address</Label>
+                <Input
+                  value={formData.street}
+                  onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                />
+                {errors.street && <p className="text-red-600 text-sm">{errors.street}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>City</Label>
-                  <Input required value={formData.city}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  />
+                  {errors.city && <p className="text-red-600 text-sm">{errors.city}</p>}
                 </div>
+
                 <div>
                   <Label>State</Label>
-                  <Input required value={formData.state}
-                    onChange={e => setFormData({ ...formData, state: e.target.value })} />
+                  <Input
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  />
+                  {errors.state && <p className="text-red-600 text-sm">{errors.state}</p>}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>PIN Code</Label>
-                  <Input
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={formData.pincode}
-                    onChange={e =>
-                      setFormData({
-                        ...formData,
-                        pincode: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Country</Label>
-                  <Input value="India" disabled />
-                </div>
+              <div>
+                <Label>PIN Code</Label>
+                <Input
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={formData.pincode}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      pincode: e.target.value.replace(/\D/g, ""),
+                    })
+                  }
+                />
+                {errors.pincode && <p className="text-red-600 text-sm">{errors.pincode}</p>}
+              </div>
+
+              <div>
+                <Label>Country</Label>
+                <Input value="India" disabled />
               </div>
 
               <DialogFooter>
-                <Button type="submit" className="bg-crimson-600">
+                <Button type="submit" className="w-full bg-crimson-600 hover:bg-crimson-700">
                   Save Address
                 </Button>
               </DialogFooter>
-
             </form>
           </DialogContent>
         </Dialog>
