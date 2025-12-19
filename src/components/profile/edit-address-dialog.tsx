@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -12,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { toast } from "@/components/ui/use-toast"
 
 interface Address {
   id: string
@@ -41,199 +49,196 @@ export function EditAddressDialog({
 }: EditAddressDialogProps) {
   const [formData, setFormData] = useState({
     name: "",
-    phone: "", // ONLY 10 digits (no +91 here)
+    phone: "",
     street: "",
     city: "",
     state: "",
     pincode: "",
     country: "India",
+    type: "home" as "home" | "work" | "other",
   })
-
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (address) {
       setFormData({
         name: address.name,
-        phone: address.phone.replace("+91", ""),
+        phone: address.phone.replace(/\D/g, ""), // sanitize
         street: address.street,
         city: address.city,
         state: address.state,
-        pincode: address.pincode,
+        pincode: address.pincode.replace(/\D/g, ""),
         country: "India",
+        type: address.type || "home",
       })
     }
   }, [address])
 
-  // 🔒 STRICT VALIDATION
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!/^[A-Za-z ]+$/.test(formData.name))
-      newErrors.name = "Name should contain only alphabets"
-
-    if (!/^[6-9]\d{9}$/.test(formData.phone))
-      newErrors.phone = "Enter valid 10-digit Indian mobile number"
-
-    if (!formData.street.trim())
-      newErrors.street = "Street address is required"
-
-    if (!/^[A-Za-z ]+$/.test(formData.city))
-      newErrors.city = "City should contain only alphabets"
-
-    if (!/^[A-Za-z ]+$/.test(formData.state))
-      newErrors.state = "State should contain only alphabets"
-
-    if (!/^\d{6}$/.test(formData.pincode))
-      newErrors.pincode = "PIN code must be 6 digits"
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateForm()) return
 
-    const payload = {
-      ...formData,
-      phone: `+91${formData.phone}`,
-      country: "India",
+    // FINAL CLIENT VALIDATION
+    if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Enter a valid 10-digit Indian mobile number",
+        variant: "destructive",
+      })
+      return
     }
 
-    const url = address
-      ? `/api/addresses/${address.id}`
-      : "/api/addresses"
+    if (!/^\d{6}$/.test(formData.pincode)) {
+      toast({
+        title: "Invalid PIN code",
+        description: "PIN code must be exactly 6 digits",
+        variant: "destructive",
+      })
+      return
+    }
 
-    const method = address ? "PUT" : "POST"
+    try {
+      const response = await fetch(`/api/addresses/${address?.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          country: "India",
+        }),
+      })
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
+      if (!response.ok) throw new Error()
 
-    if (res.ok) onSave()
+      toast({
+        title: "Success",
+        description: "Address updated successfully",
+      })
+
+      onSave()
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to save address",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg border-0">
+      <DialogContent className="border-0 max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {address ? "Edit Address" : "Add Address"}
-          </DialogTitle>
-          <DialogDescription>
-            Delivery address details
-          </DialogDescription>
+          <DialogTitle>Edit Address</DialogTitle>
+          <DialogDescription>Update your address details</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* NAME */}
-          <div>
-            <Label>Full Name</Label>
-            <Input
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value.replace(/[^A-Za-z ]/g, ""),
-                })
-              }
-            />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-          </div>
-
-          {/* PHONE */}
-          <div>
-            <Label>Phone Number</Label>
-            <div className="flex gap-2">
-              <Input value="+91" disabled className="w-16 text-center" />
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            {/* NAME */}
+            <div className="space-y-2">
+              <Label>Full Name</Label>
               <Input
-                value={formData.phone}
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            {/* PHONE */}
+            <div className="space-y-2">
+              <Label>Mobile Number</Label>
+              <Input
                 inputMode="numeric"
                 maxLength={10}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    phone: e.target.value.replace(/\D/g, ""),
-                  })
-                }
+                value={formData.phone}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, "")
+                  if (digits.length <= 10) {
+                    setFormData({ ...formData, phone: digits })
+                  }
+                }}
+                placeholder="10-digit mobile number"
+                required
               />
             </div>
-            {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-          </div>
 
-          {/* STREET */}
-          <div>
-            <Label>Street</Label>
-            <Input
-              value={formData.street}
-              onChange={(e) =>
-                setFormData({ ...formData, street: e.target.value })
-              }
-            />
-            {errors.street && <p className="text-red-500 text-sm">{errors.street}</p>}
-          </div>
+            {/* TYPE */}
+            <div className="space-y-2">
+              <Label>Address Type</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, type: value as any })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="home">Home</SelectItem>
+                  <SelectItem value="work">Work</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* CITY + STATE */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>City</Label>
+            {/* STREET */}
+            <div className="space-y-2">
+              <Label>Street Address</Label>
               <Input
+                value={formData.street}
+                onChange={(e) =>
+                  setFormData({ ...formData, street: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            {/* CITY & STATE */}
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                placeholder="City"
                 value={formData.city}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    city: e.target.value.replace(/[^A-Za-z ]/g, ""),
-                  })
+                  setFormData({ ...formData, city: e.target.value })
                 }
+                required
               />
-              {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
-            </div>
-
-            <div>
-              <Label>State</Label>
               <Input
+                placeholder="State"
                 value={formData.state}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    state: e.target.value.replace(/[^A-Za-z ]/g, ""),
-                  })
+                  setFormData({ ...formData, state: e.target.value })
                 }
+                required
               />
-              {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
             </div>
-          </div>
 
-          {/* PIN + COUNTRY */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>PIN Code</Label>
+            {/* PIN & COUNTRY */}
+            <div className="grid grid-cols-2 gap-4">
               <Input
-                value={formData.pincode}
                 inputMode="numeric"
                 maxLength={6}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    pincode: e.target.value.replace(/\D/g, ""),
-                  })
-                }
+                placeholder="PIN Code"
+                value={formData.pincode}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, "")
+                  if (digits.length <= 6) {
+                    setFormData({ ...formData, pincode: digits })
+                  }
+                }}
+                required
               />
-              {errors.pincode && <p className="text-red-500 text-sm">{errors.pincode}</p>}
-            </div>
-
-            <div>
-              <Label>Country</Label>
               <Input value="India" disabled />
             </div>
           </div>
 
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" className="bg-crimson-600 hover:bg-crimson-700">
-              {address ? "Update Address" : "Save Address"}
+              Update Address
             </Button>
           </DialogFooter>
         </form>
