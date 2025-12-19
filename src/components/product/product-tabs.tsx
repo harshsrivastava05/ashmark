@@ -14,40 +14,36 @@ interface ProductTabsProps {
     // Optional fields allowed so callers can pass serialized pricing
     price?: number
     comparePrice?: number | null
+    storyContent?: string | null
+    storyTitle?: string | null
   }
 }
 
 export function ProductTabs({ product }: ProductTabsProps) {
+  const hasStory = !!product.storyContent
+
   return (
-    <Tabs defaultValue="description" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="description">Description</TabsTrigger>
+    <Tabs defaultValue={hasStory ? "story" : "specifications"} className="w-full">
+      <TabsList className={`grid w-full ${hasStory ? "grid-cols-2" : "grid-cols-1"}`}>
+        {hasStory && <TabsTrigger value="story">Story</TabsTrigger>}
         <TabsTrigger value="specifications">Specifications</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="description" className="mt-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Product Description</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description || "No description available for this product."}
-              </p>
-
-              <div className="space-y-2">
-                <h4 className="font-medium">Key Features:</h4>
-                <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>Premium quality cotton blend fabric</li>
-                  <li>Comfortable regular fit design</li>
-                  <li>Machine washable - colors won&apos;t fade</li>
-                  <li>Soft and breathable material</li>
-                  <li>Durable construction with reinforced seams</li>
-                </ul>
+      {hasStory && (
+        <TabsContent value="story" className="mt-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">{product.storyTitle || "Product Story"}</h3>
+                <div
+                  className="text-muted-foreground leading-relaxed prose dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product.storyContent || "" }}
+                />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      )}
 
       <TabsContent value="specifications" className="mt-6">
         <Card>

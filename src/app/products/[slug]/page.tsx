@@ -28,7 +28,7 @@ export default async function ProductPage({
   const images = jsonToStringArray(product.images)
   const sizes = jsonToStringArray(product.sizes) as string[]
   const colors = jsonToStringArray(product.colors) as string[]
-  
+
   const serializedProduct = {
     id: product.id,
     name: product.name,
@@ -43,6 +43,8 @@ export default async function ProductPage({
     category: {
       name: product.category.name,
     },
+    storyContent: product.storyContent,
+    storyTitle: product.storyTitle,
   }
 
   return (
@@ -53,21 +55,21 @@ export default async function ProductPage({
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Product Images */}
             <ProductImages images={images} name={serializedProduct.name} />
-            
+
             {/* Product Info */}
             <ProductInfo product={serializedProduct} />
           </div>
-          
+
           {/* Product Details Tabs */}
           <div className="mt-16">
             <ProductTabs product={serializedProduct as any} />
           </div>
-          
+
           {/* Reviews Section */}
           <div className="mt-16">
             <ReviewSection productId={product.id} />
           </div>
-          
+
           {/* Related Products */}
           <div className="mt-16">
             <RelatedProducts
