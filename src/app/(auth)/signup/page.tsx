@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { FcGoogle } from "react-icons/fc"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Eye, EyeOff } from "lucide-react"
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -25,7 +25,9 @@ export default function SignUpPage() {
 
   useEffect(() => {
     getSession().then((session) => {
-      if (session) router.push("/")
+      if (session) {
+        router.push("/")
+      }
     })
   }, [router])
 
@@ -72,7 +74,9 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-background to-muted">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="text-3xl font-bold text-crimson-600 mb-2">ASHMARK</div>
+          <div className="text-3xl font-bold text-crimson-600 mb-2">
+            ASHMARK
+          </div>
           <CardTitle>Create Account</CardTitle>
           <CardDescription>
             Join ASHMARK and discover premium t-shirts
@@ -88,6 +92,7 @@ export default function SignUpPage() {
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -100,6 +105,7 @@ export default function SignUpPage() {
               />
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -113,6 +119,7 @@ export default function SignUpPage() {
               />
             </div>
 
+            {/* Password with Eye Icon */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -125,14 +132,20 @@ export default function SignUpPage() {
                   disabled={loading}
                   required
                   minLength={6}
-                  className="pr-10"
+                  className="pr-12"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -142,6 +155,7 @@ export default function SignUpPage() {
             </Button>
           </form>
 
+          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -153,6 +167,7 @@ export default function SignUpPage() {
             </div>
           </div>
 
+          {/* Google Signup */}
           <Button
             variant="outline"
             className="w-full"
@@ -163,15 +178,22 @@ export default function SignUpPage() {
             Sign up with Google
           </Button>
 
+          {/* Links */}
           <div className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-crimson-600 hover:underline font-medium">
+            <Link
+              href="/login"
+              className="text-crimson-600 hover:underline font-medium"
+            >
               Sign in
             </Link>
           </div>
 
           <div className="text-center">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               ← Back to Home
             </Link>
           </div>
