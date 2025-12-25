@@ -14,17 +14,18 @@ import { AlertCircle } from "lucide-react"
 
 export default function SignUpPage() {
   const router = useRouter()
+
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
     getSession().then((session) => {
-      if (session) {
-        router.push('/')
-      }
+      if (session) router.push("/")
     })
   }, [router])
 
@@ -34,10 +35,9 @@ export default function SignUpPage() {
     setError("")
 
     try {
-      // Create the account
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       })
 
@@ -49,25 +49,20 @@ export default function SignUpPage() {
         return
       }
 
-      // Automatically sign in the user
-      const signInRes = await signIn('credentials', { 
-        email, 
-        password, 
-        redirect: false 
+      const signInRes = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
       })
 
-      if (signInRes?.error) {
-        setError("Account created but login failed. Please try logging in.")
-        setLoading(false)
-      } else if (signInRes?.ok) {
-        router.push('/')
+      if (signInRes?.ok) {
+        router.push("/")
         router.refresh()
       } else {
-        setError("Account created but login failed. Please try logging in.")
+        setError("Account created but login failed.")
         setLoading(false)
       }
     } catch (err) {
-      console.error("Signup error:", err)
       setError("An error occurred. Please try again.")
       setLoading(false)
     }
@@ -83,6 +78,7 @@ export default function SignUpPage() {
             Join ASHMARK and discover premium t-shirts
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           {error && (
             <Alert variant="destructive">
@@ -94,39 +90,53 @@ export default function SignUpPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input 
-                id="name" 
-                value={name} 
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
-                placeholder="John Doe"
+                required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                disabled={loading}
-                required 
+              <Input
+                id="email"
+                type="email"
                 placeholder="john@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 required
-                minLength={6}
-                placeholder="Min. 6 characters"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                  minLength={6}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>
@@ -146,20 +156,20 @@ export default function SignUpPage() {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => signIn('google', { callbackUrl: '/' })}
+            onClick={() => signIn("google", { callbackUrl: "/" })}
             disabled={loading}
           >
             <FcGoogle className="mr-2 h-5 w-5" />
             Sign up with Google
           </Button>
-          
+
           <div className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link href="/login" className="text-crimson-600 hover:underline font-medium">
               Sign in
             </Link>
           </div>
-          
+
           <div className="text-center">
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
               ← Back to Home
