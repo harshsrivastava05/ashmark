@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import DOMPurify from "isomorphic-dompurify"
 
 interface ProductTabsProps {
   product: {
@@ -37,7 +38,7 @@ export function ProductTabs({ product }: ProductTabsProps) {
                 <h3 className="text-lg font-semibold">{product.storyTitle || "Product Story"}</h3>
                 <div
                   className="text-muted-foreground leading-relaxed prose dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: product.storyContent || "" }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.storyContent || "") }}
                 />
               </div>
             </CardContent>

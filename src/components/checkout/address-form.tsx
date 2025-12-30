@@ -32,17 +32,18 @@ interface Address {
 }
 
 interface AddressFormProps {
+  addresses: Address[]
   selectedAddress: Address | null
   onAddressSelect: (address: Address) => void
   onAddressUpdate: () => void
 }
 
 export function AddressForm({
+  addresses,
   selectedAddress,
   onAddressSelect,
   onAddressUpdate,
 }: AddressFormProps) {
-  const [userAddresses, setUserAddresses] = useState<Address[]>([])
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
 
@@ -59,21 +60,6 @@ export function AddressForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState("")
-
-  /* ---------------------------------- */
-  /* Fetch addresses */
-  /* ---------------------------------- */
-  useEffect(() => {
-    fetchAddresses()
-  }, [])
-
-  const fetchAddresses = async () => {
-    const res = await fetch("/api/addresses")
-    if (res.ok) {
-      const data = await res.json()
-      setUserAddresses(data.addresses)
-    }
-  }
 
   /* ---------------------------------- */
   /* Validation */
@@ -134,7 +120,6 @@ export function AddressForm({
     setIsAddingNew(false)
     setEditingAddress(null)
     resetForm()
-    fetchAddresses()
     onAddressUpdate()
   }
 
@@ -170,11 +155,11 @@ export function AddressForm({
         <RadioGroup
           value={selectedAddress?.id || ""}
           onValueChange={(value) => {
-            const addr = userAddresses.find((a) => a.id === value)
+            const addr = addresses.find((a) => a.id === value)
             if (addr) onAddressSelect(addr)
           }}
         >
-          {userAddresses.map((address) => (
+          {addresses.map((address) => (
             <div key={address.id} className="flex gap-3 p-3 bg-muted/40">
               <RadioGroupItem value={address.id} />
               <div className="flex-1">
