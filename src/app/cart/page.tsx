@@ -180,22 +180,21 @@ export default function CartPage() {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+
                   {/* Promo Code Section */}
                   <div className="space-y-2">
                     {appliedPromoCode ? (
-                      <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/30 rounded-md border border-green-200 dark:border-green-800">
+                      <div className="flex items-center justify-between p-2 bg-black text-white rounded-md border border-black">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-green-900 dark:text-green-100">
-                            {appliedPromoCode}
-                          </span>
-                          <span className="text-xs font-bold text-green-700 dark:text-green-300">
+                          <span className="text-sm font-semibold">{appliedPromoCode}</span>
+                          <span className="text-xs font-bold text-green-400">
                             -{formatPrice(discount)}
                           </span>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 px-2 text-xs text-foreground hover:text-destructive"
+                          className="h-6 px-2 text-xs text-white opacity-80 hover:opacity-100"
                           onClick={handleRemovePromoCode}
                         >
                           Remove
@@ -212,7 +211,7 @@ export default function CartPage() {
                               handleApplyPromoCode()
                             }
                           }}
-                          className="flex-1"
+                          className="flex-1 border-2 border-black text-black placeholder:text-gray-500"
                         />
                         <Button
                           onClick={handleApplyPromoCode}
@@ -228,36 +227,43 @@ export default function CartPage() {
                   <Separator />
 
                   <div className="flex justify-between text-foreground">
-                    <span className="text-foreground">Subtotal</span>
-                    <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
+                    <span>Subtotal</span>
+                    <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-foreground">
-                    <span className="text-foreground">Shipping</span>
+                    <span>Shipping</span>
                     <span>
                       {shipping === 0 ? (
                         <span className="text-green-700 dark:text-green-400 font-semibold">Free</span>
                       ) : (
-                        <span className="font-medium text-foreground">{formatPrice(shipping)}</span>
+                        <span className="font-medium">{formatPrice(shipping)}</span>
                       )}
                     </span>
                   </div>
+
                   {discount > 0 && (
                     <div className="flex justify-between text-green-700 dark:text-green-400">
                       <span className="font-medium">Discount</span>
                       <span className="font-semibold">-{formatPrice(discount)}</span>
                     </div>
                   )}
+
                   <Separator />
+
                   <div className="flex justify-between font-semibold text-lg text-foreground">
-                    <span className="text-foreground">Total</span>
-                    <span className="text-crimson-700 dark:text-crimson-400">{formatPrice(total)}</span>
+                    <span>Total</span>
+                    <span className="text-crimson-700 dark:text-crimson-400">
+                      {formatPrice(total)}
+                    </span>
                   </div>
+
                   <Button
                     className="w-full bg-crimson-600 hover:bg-crimson-700"
                     onClick={handleCheckout}
                   >
                     {session ? 'Proceed to Checkout' : 'Login to Checkout'}
                   </Button>
+
                   {subtotal < 1000 && (
                     <p className="text-sm text-muted-foreground text-center">
                       Add {formatPrice(1000 - subtotal)} more for free shipping
