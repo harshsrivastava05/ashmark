@@ -14,7 +14,6 @@ import { EmptyCart } from "@/components/cart/empty-cart"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCart } from "@/contexts/cart-context"
 import { toast } from "@/components/ui/use-toast"
-import { Input } from "@/components/ui/input"
 
 interface CartItemType {
   id: string
@@ -34,10 +33,6 @@ export default function CartPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { cartItems, updateQuantity, removeItem, loading } = useCart()
-  const [promoCode, setPromoCode] = useState("")
-  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null)
-  const [discount, setDiscount] = useState(0)
-  const [applyingPromo, setApplyingPromo] = useState(false)
 
   const handleCheckout = () => {
     if (!session) {
@@ -52,78 +47,12 @@ export default function CartPage() {
     router.push('/checkout')
   }
 
-  const handleApplyPromoCode = async () => {
-    if (!promoCode.trim()) {
-      toast({
-        title: "Promo Code Required",
-        description: "Please enter a promo code",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!session) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to apply promo code",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setApplyingPromo(true)
-    const subtotal = cartItems.reduce(
-      (sum, item) => sum + Number(item.product.price) * item.quantity,
-      0
-    )
-
-    try {
-      const response = await fetch('/api/promo-codes/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promoCode: promoCode.trim(), subtotal }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        toast({
-          title: "Invalid Promo Code",
-          description: data.error || "This promo code cannot be applied",
-          variant: "destructive",
-        })
-        return
-      }
-
-      setAppliedPromoCode(data.code)
-      setDiscount(data.discount || 0)
-      toast({
-        title: "Promo Code Applied",
-        description: `Discount of ${formatPrice(data.discount || 0)} applied!`,
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to apply promo code. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setApplyingPromo(false)
-    }
-  }
-
-  const handleRemovePromoCode = () => {
-    setAppliedPromoCode(null)
-    setDiscount(0)
-    setPromoCode("")
-  }
-
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity,
     0
   )
   const shipping = subtotal > 1000 ? 0 : 100
-  const total = subtotal + shipping - discount
+  const total = subtotal + shipping
 
   if (loading) {
     return (
@@ -180,14 +109,13 @@ export default function CartPage() {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-
-
                   <Separator />
 
                   <div className="flex justify-between text-foreground">
                     <span>Subtotal</span>
                     <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
+
                   <div className="flex justify-between text-foreground">
                     <span>Shipping</span>
                     <span>
@@ -198,13 +126,6 @@ export default function CartPage() {
                       )}
                     </span>
                   </div>
-
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-700 dark:text-green-400">
-                      <span className="font-medium">Discount</span>
-                      <span className="font-semibold">-{formatPrice(discount)}</span>
-                    </div>
-                  )}
 
                   <Separator />
 
