@@ -62,7 +62,7 @@ export default async function ProductPage({
 
           {/* Product Details Tabs */}
           <div className="mt-16">
-            <ProductTabs product={serializedProduct as any} />
+            <ProductTabs product={serializedProduct} />
           </div>
 
           {/* Reviews Section */}
