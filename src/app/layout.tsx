@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -29,7 +30,7 @@ export default async function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
         {/* Razorpay Script */}
-        <script src="https://checkout.razorpay.com/v1/checkout.js" />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       </head>
       <body className={inter.className}>
         <SessionProvider session={session}>
