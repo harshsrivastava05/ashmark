@@ -19,10 +19,20 @@ export default function ForgotPasswordPage() {
         setLoading(true)
 
         // Simulate API call
-        setTimeout(() => {
-            setSubmitted(true)
-            setLoading(false)
-        }, 1000)
+        const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setLoading(true)
+
+  await fetch("/api/auth/request-reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  })
+
+  setLoading(false)
+  setSubmitted(true)
+}
+
     }
 
     return (
