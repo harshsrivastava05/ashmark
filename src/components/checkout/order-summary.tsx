@@ -183,13 +183,14 @@ export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSu
         )}
 
         {shipping === 0 && (
-          <div className="p-3 rounded-md bg-black text-white border border-black">
-            <p className="font-semibold">Free shipping applied!</p>
-            <p className="text-sm text-gray-300">
-              Your order qualifies for free delivery
-            </p>
-          </div>
-        )}
+  <div className="p-3 rounded-md bg-black text-white border border-black">
+    <p className="font-semibold">Free shipping applied!</p>
+    <p className="text-sm text-gray-300">
+      Your order qualifies for free delivery
+    </p>
+  </div>
+)}
+
 
         {discount > 0 && (
           <div className="p-3 rounded-md bg-black text-white border border-black">
