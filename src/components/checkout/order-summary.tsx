@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/utils"
-import { ShoppingBag, Truck, Receipt, Info } from "lucide-react"
+import { ShoppingBag } from "lucide-react"
 import Image from "next/image"
 
 interface CartItem {
@@ -55,7 +55,6 @@ export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSu
   )
   const shipping = subtotal > 1000 ? 0 : 100
   const tax = 0
-  // Use promo discount if provided, otherwise use the old logic for backward compatibility
   const discount = promoDiscount > 0 ? promoDiscount : (subtotal > 2000 ? subtotal * 0.05 : 0)
   const total = subtotal + shipping + tax - discount
 
@@ -93,6 +92,7 @@ export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSu
           Review your items before checkout
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-4">
         {/* Cart Items */}
         <div className="space-y-3">
@@ -142,29 +142,22 @@ export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSu
             <span className="text-foreground">Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
             <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
           </div>
-          
+
           <div className="flex justify-between text-sm text-foreground">
-            <div className="flex items-center gap-1">
-              <Truck className="h-4 w-4 text-foreground" />
-              <span className="text-foreground">Shipping</span>
-            </div>
+            <span className="text-foreground">Shipping</span>
             <span>
               {shipping === 0 ? (
-                <span className="text-green-700 dark:text-green-400 font-semibold">FREE</span>
+                <span className="font-semibold text-green-700 dark:text-green-400">FREE</span>
               ) : (
                 <span className="font-medium text-foreground">{formatPrice(shipping)}</span>
               )}
             </span>
           </div>
-          
-          {/* No tax applied */}
 
           {discount > 0 && (
             <div className="flex justify-between text-sm text-green-700 dark:text-green-400">
               <span className="font-medium">
-                {promoCode 
-                  ? `Discount (${promoCode})` 
-                  : "Discount (5% off on orders above ₹2000)"}
+                {promoCode ? `Discount (${promoCode})` : "Discount (5% off on orders above ₹2000)"}
               </span>
               <span className="font-semibold">-{formatPrice(discount)}</span>
             </div>
@@ -178,52 +171,32 @@ export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSu
           </div>
         </div>
 
-        {/* Shipping Info */}
+        {/* SHIPPING / ALERT SECTIONS */}
+
         {subtotal < 1000 && (
-          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500">
-            <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 text-yellow-700 dark:text-yellow-300 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-yellow-900 dark:text-yellow-100">
-                  Almost there!
-                </p>
-                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
-                  Add {formatPrice(1000 - subtotal)} more to get free shipping
-                </p>
-              </div>
-            </div>
+          <div className="p-3 rounded-md bg-black text-white border border-black">
+            <p className="font-semibold">Almost there!</p>
+            <p className="text-sm text-gray-300">
+              Add {formatPrice(1000 - subtotal)} more to get free shipping
+            </p>
           </div>
         )}
 
         {shipping === 0 && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500">
-            <div className="flex items-start gap-2">
-              <Truck className="h-4 w-4 text-green-700 dark:text-green-300 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-green-900 dark:text-green-100">
-                  Free shipping applied!
-                </p>
-                <p className="text-green-800 dark:text-green-200 font-medium">
-                  Your order qualifies for free delivery
-                </p>
-              </div>
-            </div>
+          <div className="p-3 rounded-md bg-black text-white border border-black">
+            <p className="font-semibold">Free shipping applied!</p>
+            <p className="text-sm text-gray-300">
+              Your order qualifies for free delivery
+            </p>
           </div>
         )}
 
         {discount > 0 && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500">
-            <div className="flex items-start gap-2">
-              <Receipt className="h-4 w-4 text-green-700 dark:text-green-300 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-green-900 dark:text-green-100">
-                  Discount applied!
-                </p>
-                <p className="text-green-800 dark:text-green-200 font-medium">
-                  You saved {formatPrice(discount)} on this order
-                </p>
-              </div>
-            </div>
+          <div className="p-3 rounded-md bg-black text-white border border-black">
+            <p className="font-semibold">Discount applied!</p>
+            <p className="text-sm text-gray-300">
+              You saved {formatPrice(discount)} on this order
+            </p>
           </div>
         )}
       </CardContent>
