@@ -173,48 +173,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Our Store Section */}
-        <section className="py-16 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Store</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Visit us at our physical location
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <h3 className="text-2xl font-semibold mb-4">
-                  ASHMARK Flagship Store
-                </h3>
-                <address className="not-italic text-muted-foreground mb-6">
-                  <p>123 Fashion Street</p>
-                  <p>Mumbai, Maharashtra 400001</p>
-                  <p>India</p>
-                  <p className="mt-2">Phone: +91 9876543210</p>
-                  <p>Email: store@ashmark.com</p>
-                </address>
-                <Button asChild>
-                  <a
-                    href="https://maps.google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Get Directions
-                  </a>
-                </Button>
-              </div>
-              <div className="h-96 rounded-lg overflow-hidden relative">
-                <Image
-                  src="/map.png"
-                  alt="ASHMARK Store Location"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
+
 
         {/* Testimonials Section */}
         <section className="py-16 px-4 bg-muted/20">
