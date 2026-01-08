@@ -226,7 +226,6 @@ export default function CheckoutPage() {
         order_id: orderData.razorpayOrderId,
         handler: async (response: RazorpayResponse) => {
           try {
-            // Verify payment
             const verifyResponse = await fetch('/api/payments/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -249,7 +248,6 @@ export default function CheckoutPage() {
               throw new Error('Payment verification failed')
             }
           } catch (error) {
-            console.error('Payment verification error:', error)
             toast({
               title: "Payment Verification Failed",
               description: "Please contact support if payment was deducted.",
@@ -270,7 +268,6 @@ export default function CheckoutPage() {
       const razorpayInstance = new Razorpay(options as any)
       razorpayInstance.open()
     } catch (error) {
-      console.error('Payment error:', error)
       toast({
         title: "Payment Failed",
         description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
@@ -304,22 +301,19 @@ export default function CheckoutPage() {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  
                   {/* Promo Code Section */}
                   <div className="mb-4 space-y-2">
                     {appliedPromoCode ? (
-                      <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                      <div className="flex items-center justify-between p-2 bg-black text-white border border-black rounded-md">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                            {appliedPromoCode}
-                          </span>
-                          <span className="text-xs text-green-600 dark:text-green-400">
-                            -{formatPrice(discount)}
-                          </span>
+                          <span className="text-sm font-semibold">{appliedPromoCode}</span>
+                          <span className="text-xs font-bold text-green-400">-{formatPrice(discount)}</span>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 px-2 text-xs"
+                          className="h-6 px-2 text-xs text-white opacity-80 hover:opacity-100"
                           onClick={handleRemovePromoCode}
                         >
                           Remove
@@ -332,11 +326,9 @@ export default function CheckoutPage() {
                           value={promoCode}
                           onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleApplyPromoCode()
-                            }
+                            if (e.key === 'Enter') handleApplyPromoCode()
                           }}
-                          className="flex-1"
+                          className="flex-1 border-2 border-black text-black placeholder:text-gray-500"
                         />
                         <Button
                           onClick={handleApplyPromoCode}
@@ -350,6 +342,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <OrderSummary promoCode={appliedPromoCode} discount={discount} />
+
                   <div className="mt-6 pt-4 border-t">
                     <div className="flex justify-between font-semibold text-lg mb-4">
                       <span>Total</span>
@@ -401,6 +394,7 @@ export default function CheckoutPage() {
                           ? "Place COD Order"
                           : `Pay ${formatPrice(orderTotal)}`}
                     </Button>
+                    
                     {error && paymentMethod === "online" && (
                       <p className="text-sm text-destructive mt-2">
                         Error loading payment gateway. Please refresh the page.
