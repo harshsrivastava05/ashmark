@@ -181,48 +181,6 @@ export default function CartPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
 
-                  {/* Promo Code Section */}
-                  <div className="space-y-2">
-                    {appliedPromoCode ? (
-                      <div className="flex items-center justify-between p-2 bg-black text-white rounded-md border border-black">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold">{appliedPromoCode}</span>
-                          <span className="text-xs font-bold text-green-400">
-                            -{formatPrice(discount)}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs text-white opacity-80 hover:opacity-100"
-                          onClick={handleRemovePromoCode}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter promo code"
-                          value={promoCode}
-                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleApplyPromoCode()
-                            }
-                          }}
-                          className="flex-1 border-2 border-black text-black placeholder:text-gray-500"
-                        />
-                        <Button
-                          onClick={handleApplyPromoCode}
-                          disabled={applyingPromo || !promoCode.trim()}
-                          variant="outline"
-                        >
-                          Apply
-                        </Button>
-                      </div>
-                    )}
-                  </div>
 
                   <Separator />
 
