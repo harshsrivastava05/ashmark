@@ -2,8 +2,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Package } from "lucide-react"
+import { Plus, Package, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { TopProducts } from "@/components/admin/top-products"
 
 export function AddProductSection() {
   return (
@@ -30,7 +38,7 @@ export function AddProductSection() {
             </Link>
           </Button>
         </div>
-        
+
         <div className="border-t pt-4">
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm font-medium">Quick Actions</span>
@@ -39,9 +47,23 @@ export function AddProductSection() {
             <Button variant="outline" size="sm" asChild className="border-0 bg-muted/30">
               <Link href="/admin/products">
                 <Package className="w-4 h-4 mr-2" />
-                View All Products
+                View All
               </Link>
             </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="border-0 bg-muted/30 ml-2">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Top Products
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Top Performing Products</DialogTitle>
+                </DialogHeader>
+                <TopProducts />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </CardContent>
