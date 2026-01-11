@@ -22,7 +22,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { error, isLoading, Razorpay } = useRazorpay()
   const { cartItems, clearCart } = useCart()
-  
+
   type Address = {
     id: string
     name: string
@@ -36,13 +36,23 @@ export default function CheckoutPage() {
   }
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
-  const [orderTotal, setOrderTotal] = useState(0)
+
+  // Derived state for order calculations
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    0
+  )
+  const shipping = subtotal > 1000 ? 0 : 100
+  const tax = 0
+
   const [processing, setProcessing] = useState(false)
   const [promoCode, setPromoCode] = useState("")
   const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null)
   const [discount, setDiscount] = useState(0)
   const [applyingPromo, setApplyingPromo] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online")
+
+  const total = Math.max(0, subtotal + shipping + tax - discount)
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -60,15 +70,6 @@ export default function CheckoutPage() {
     }
   }, [])
 
-  const calculateOrderTotal = useCallback(() => {
-    const subtotal = cartItems.reduce(
-      (sum, item) => sum + Number(item.product.price) * item.quantity,
-      0
-    )
-    const shipping = subtotal > 1000 ? 0 : 100
-    setOrderTotal(subtotal + shipping - discount)
-  }, [cartItems, discount])
-
   const handleApplyPromoCode = async () => {
     if (!promoCode.trim()) {
       toast({
@@ -80,10 +81,6 @@ export default function CheckoutPage() {
     }
 
     setApplyingPromo(true)
-    const subtotal = cartItems.reduce(
-      (sum, item) => sum + Number(item.product.price) * item.quantity,
-      0
-    )
 
     try {
       const response = await fetch('/api/promo-codes/validate', {
@@ -105,7 +102,7 @@ export default function CheckoutPage() {
 
       setAppliedPromoCode(data.code)
       setDiscount(data.discount || 0)
-      calculateOrderTotal()
+
       toast({
         title: "Promo Code Applied",
         description: `Discount of ${formatPrice(data.discount || 0)} applied!`,
@@ -125,7 +122,6 @@ export default function CheckoutPage() {
     setAppliedPromoCode(null)
     setDiscount(0)
     setPromoCode("")
-    calculateOrderTotal()
   }
 
   useEffect(() => {
@@ -140,8 +136,7 @@ export default function CheckoutPage() {
     }
 
     fetchAddresses()
-    calculateOrderTotal()
-  }, [session, router, fetchAddresses, calculateOrderTotal, cartItems])
+  }, [session, router, fetchAddresses, cartItems])
 
   const handlePayment = async () => {
     if (!selectedAddress) {
@@ -171,7 +166,7 @@ export default function CheckoutPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: orderTotal,
+            amount: total,
             addressId: selectedAddress.id,
             promoCode: appliedPromoCode || undefined,
             paymentMethod: 'COD',
@@ -198,7 +193,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: orderTotal,
+          amount: total,
           addressId: selectedAddress.id,
           promoCode: appliedPromoCode || undefined,
           paymentMethod: 'ONLINE',
@@ -301,7 +296,7 @@ export default function CheckoutPage() {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  
+
                   {/* Promo Code Section */}
                   <div className="mb-4 space-y-2">
                     {appliedPromoCode ? (
@@ -341,12 +336,20 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
-                  <OrderSummary promoCode={appliedPromoCode} discount={discount} />
+                  <OrderSummary
+                    cartItems={cartItems}
+                    subtotal={subtotal}
+                    shipping={shipping}
+                    tax={tax}
+                    discount={discount}
+                    total={total}
+                    promoCode={appliedPromoCode}
+                  />
 
                   <div className="mt-6 pt-4 border-t">
                     <div className="flex justify-between font-semibold text-lg mb-4">
                       <span>Total</span>
-                      <span>{formatPrice(orderTotal)}</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
 
                     <div className="mb-4 space-y-3">
@@ -392,9 +395,9 @@ export default function CheckoutPage() {
                           : "Processing..."
                         : paymentMethod === "cod"
                           ? "Place COD Order"
-                          : `Pay ${formatPrice(orderTotal)}`}
+                          : `Pay ${formatPrice(total)}`}
                     </Button>
-                    
+
                     {error && paymentMethod === "online" && (
                       <p className="text-sm text-destructive mt-2">
                         Error loading payment gateway. Please refresh the page.

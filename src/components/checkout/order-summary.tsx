@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
@@ -22,64 +21,27 @@ interface CartItem {
   }
 }
 
+
+
 interface OrderSummaryProps {
+  cartItems: CartItem[]
+  subtotal: number
+  shipping: number
+  tax: number
+  discount: number
+  total: number
   promoCode?: string | null
-  discount?: number
 }
 
-export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSummaryProps) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchCartItems()
-  }, [])
-
-  const fetchCartItems = async () => {
-    try {
-      const response = await fetch('/api/cart')
-      if (response.ok) {
-        const data = await response.json()
-        setCartItems(data.cartItems)
-      }
-    } catch (error) {
-      console.error('Error fetching cart items:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
-    0
-  )
-  const shipping = subtotal > 1000 ? 0 : 100
-  const tax = 0
-  const discount = promoDiscount > 0 ? promoDiscount : (subtotal > 2000 ? subtotal * 0.05 : 0)
-  const total = subtotal + shipping + tax - discount
-
-  if (loading) {
-    return (
-      <Card className="border-0 shadow-md">
-        <CardHeader>
-          <CardTitle>Order Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4 animate-pulse">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-3">
-                <div className="w-12 h-12 bg-muted"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-muted"></div>
-                  <div className="h-3 bg-muted w-1/2"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+export function OrderSummary({
+  cartItems,
+  subtotal,
+  shipping,
+  tax,
+  discount,
+  total,
+  promoCode
+}: OrderSummaryProps) {
 
   return (
     <Card className="border-0 shadow-md">
@@ -183,13 +145,13 @@ export function OrderSummary({ promoCode, discount: promoDiscount = 0 }: OrderSu
         )}
 
         {shipping === 0 && (
-  <div className="p-3 rounded-md bg-black text-white border border-black">
-    <p className="font-semibold">Free shipping applied!</p>
-    <p className="text-sm text-gray-300">
-      Your order qualifies for free delivery
-    </p>
-  </div>
-)}
+          <div className="p-3 rounded-md bg-black text-white border border-black">
+            <p className="font-semibold">Free shipping applied!</p>
+            <p className="text-sm text-gray-300">
+              Your order qualifies for free delivery
+            </p>
+          </div>
+        )}
 
 
         {discount > 0 && (
